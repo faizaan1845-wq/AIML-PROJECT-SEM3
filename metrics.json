@@ -1,0 +1,263 @@
+{
+  "best_model": "Logistic Regression (Balanced)",
+  "dataset_used": "data/curated_training_dataset.csv",
+  "rows": 26722,
+  "train_rows": 20041,
+  "test_rows": 6681,
+  "results": {
+    "Logistic Regression (Balanced)": {
+      "accuracy": 0.7216,
+      "precision_suspicious": 0.7155,
+      "recall_suspicious": 0.7356,
+      "f1_suspicious": 0.7254,
+      "roc_auc": 0.7932
+    },
+    "Multinomial Naive Bayes": {
+      "accuracy": 0.7017,
+      "precision_suspicious": 0.6778,
+      "recall_suspicious": 0.7686,
+      "f1_suspicious": 0.7204,
+      "roc_auc": 0.7788
+    },
+    "Complement Naive Bayes": {
+      "accuracy": 0.7018,
+      "precision_suspicious": 0.678,
+      "recall_suspicious": 0.7686,
+      "f1_suspicious": 0.7205,
+      "roc_auc": 0.7788
+    },
+    "Calibrated SGD (Modified Huber)": {
+      "accuracy": 0.7183,
+      "precision_suspicious": 0.7167,
+      "recall_suspicious": 0.7219,
+      "f1_suspicious": 0.7193,
+      "roc_auc": 0.7844
+    }
+  },
+  "best_model_test_metrics": {
+    "accuracy": 0.7216,
+    "precision_suspicious": 0.7155,
+    "recall_suspicious": 0.7356,
+    "f1_suspicious": 0.7254,
+    "roc_auc": 0.7932
+  },
+  "confusion_matrix": [
+    [
+      2364,
+      977
+    ],
+    [
+      883,
+      2457
+    ]
+  ],
+  "confusion_matrix_labels": [
+    "genuine",
+    "suspicious"
+  ],
+  "top_suspicious_words": [
+    {
+      "word": "is",
+      "weight": 4.495
+    },
+    {
+      "word": "can",
+      "weight": 3.905
+    },
+    {
+      "word": "humidifier",
+      "weight": 3.874
+    },
+    {
+      "word": "and",
+      "weight": 3.759
+    },
+    {
+      "word": "my",
+      "weight": 3.63
+    },
+    {
+      "word": "this",
+      "weight": 3.367
+    },
+    {
+      "word": "the",
+      "weight": 3.311
+    },
+    {
+      "word": "to",
+      "weight": 3.127
+    },
+    {
+      "word": "good",
+      "weight": 2.805
+    },
+    {
+      "word": "diffuser",
+      "weight": 2.786
+    },
+    {
+      "word": "keyboard",
+      "weight": 2.764
+    },
+    {
+      "word": "it",
+      "weight": 2.655
+    },
+    {
+      "word": "with",
+      "weight": 2.546
+    },
+    {
+      "word": "its",
+      "weight": 2.474
+    },
+    {
+      "word": "gloves",
+      "weight": 2.416
+    },
+    {
+      "word": "oil",
+      "weight": 2.408
+    },
+    {
+      "word": "bubbles",
+      "weight": 2.406
+    },
+    {
+      "word": "need",
+      "weight": 2.398
+    },
+    {
+      "word": "light",
+      "weight": 2.39
+    },
+    {
+      "word": "water",
+      "weight": 2.381
+    },
+    {
+      "word": "sleep",
+      "weight": 2.35
+    },
+    {
+      "word": "pretty",
+      "weight": 2.22
+    },
+    {
+      "word": "also",
+      "weight": 2.183
+    },
+    {
+      "word": "really",
+      "weight": 2.179
+    },
+    {
+      "word": "any",
+      "weight": 2.164
+    }
+  ],
+  "top_genuine_words": [
+    {
+      "word": "not",
+      "weight": -3.151
+    },
+    {
+      "word": "months",
+      "weight": -2.644
+    },
+    {
+      "word": "broke",
+      "weight": -2.611
+    },
+    {
+      "word": "band",
+      "weight": -2.494
+    },
+    {
+      "word": "only",
+      "weight": -2.164
+    },
+    {
+      "word": "for the",
+      "weight": -2.101
+    },
+    {
+      "word": "leather",
+      "weight": -2.004
+    },
+    {
+      "word": "stars",
+      "weight": -1.973
+    },
+    {
+      "word": "purchased",
+      "weight": -1.929
+    },
+    {
+      "word": "christmas",
+      "weight": -1.914
+    },
+    {
+      "word": "thermometer",
+      "weight": -1.871
+    },
+    {
+      "word": "off",
+      "weight": -1.825
+    },
+    {
+      "word": "would not",
+      "weight": -1.798
+    },
+    {
+      "word": "but",
+      "weight": -1.777
+    },
+    {
+      "word": "fan",
+      "weight": -1.711
+    },
+    {
+      "word": "issue",
+      "weight": -1.69
+    },
+    {
+      "word": "returned",
+      "weight": -1.661
+    },
+    {
+      "word": "cards",
+      "weight": -1.653
+    },
+    {
+      "word": "not recommend",
+      "weight": -1.638
+    },
+    {
+      "word": "hoping",
+      "weight": -1.614
+    },
+    {
+      "word": "unless",
+      "weight": -1.603
+    },
+    {
+      "word": "the band",
+      "weight": -1.577
+    },
+    {
+      "word": "the time",
+      "weight": -1.575
+    },
+    {
+      "word": "case",
+      "weight": -1.569
+    },
+    {
+      "word": "disappointing",
+      "weight": -1.566
+    }
+  ],
+  "methodology": "TF-IDF (unigrams + bigrams, sublinear tf) + Calibrated Linear Classifier. Stratified 75/25 split with exclusive reviewer deduplication."
+}
