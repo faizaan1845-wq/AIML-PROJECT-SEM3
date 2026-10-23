@@ -5,6 +5,7 @@ Core utilities for TrustRate AI:
 - Deceptive keyword & behavioral cue extraction
 - Rating inflation calculation (Displayed vs Authentic)
 - Star distribution shift analysis and trust grading
+- Integrated aspect-based failure diagnostics & pros/cons extraction
 """
 
 import re
@@ -114,7 +115,8 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
     - Predicts suspicious probability for each review using hybrid ML + linguistic signals
     - Filters out suspicious reviews to obtain Authentic / Adjusted Rating
     - Computes exact Rating Inflation: (Displayed - Authentic)
-    - Returns comprehensive analytics
+    - Extracts why the product fails and genuine pros & cons
+    - Returns comprehensive forensic diagnostics
     """
     df = reviews_df.copy()
     df[rating_col] = pd.to_numeric(df[rating_col], errors="coerce")
@@ -131,7 +133,8 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
             "inflation_pct": 0.0,
             "fake_pct": 0.0,
             "trust_grade": "N/A",
-            "verdict": "No valid reviews"
+            "verdict": "No valid reviews",
+            "aspect_analysis": {}
         }
         
     displayed_rating = float(df[rating_col].mean())
@@ -160,7 +163,6 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
     if len(genuine_df) > 0:
         authentic_rating = float(genuine_df[rating_col].mean())
     else:
-        # If 100% of reviews are suspicious, heavily penalize
         authentic_rating = max(1.0, displayed_rating - 1.5)
         
     # Inflation Delta: Displayed - Authentic
@@ -199,6 +201,13 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
     
     star_dist_gen = genuine_df[rating_col].value_counts().to_dict() if len(genuine_df) > 0 else {}
     star_dist_gen = {int(s): int(star_dist_gen.get(s, 0)) for s in range(1, 6)}
+
+    # Aspect-based Failure Mode Diagnostics and Pros/Cons
+    try:
+        from aspect_analyzer import extract_aspect_sentiment_and_failures
+        aspect_data = extract_aspect_sentiment_and_failures(df)
+    except Exception:
+        aspect_data = {}
     
     return {
         "total_reviews": total_reviews,
@@ -215,5 +224,6 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
         "color": color,
         "star_distribution_all": star_dist_all,
         "star_distribution_genuine": star_dist_gen,
-        "classified_df": df
+        "classified_df": df,
+        "aspect_analysis": aspect_data
     }

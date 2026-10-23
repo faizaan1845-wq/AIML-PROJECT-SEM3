@@ -1,54 +1,61 @@
 {
-  "best_model": "Logistic Regression (Balanced)",
-  "dataset_used": "data/curated_training_dataset.csv",
-  "rows": 26722,
-  "train_rows": 20041,
-  "test_rows": 6681,
+  "best_model": "Logistic Regression (Balanced TF-IDF)",
+  "dataset_used": "data/electronics_catalog.json (ground-truth reviews)",
+  "rows": 4398,
+  "train_rows": 3298,
+  "test_rows": 1100,
   "results": {
-    "Logistic Regression (Balanced)": {
-      "accuracy": 0.7216,
-      "precision_suspicious": 0.7155,
-      "recall_suspicious": 0.7356,
-      "f1_suspicious": 0.7254,
-      "roc_auc": 0.7932
+    "Calibrated LinearSVC": {
+      "accuracy": 0.7655,
+      "precision_suspicious": 0.7573,
+      "recall_suspicious": 0.7213,
+      "f1_suspicious": 0.7389,
+      "roc_auc": 0.8267
     },
-    "Multinomial Naive Bayes": {
-      "accuracy": 0.7017,
-      "precision_suspicious": 0.6778,
-      "recall_suspicious": 0.7686,
-      "f1_suspicious": 0.7204,
-      "roc_auc": 0.7788
+    "Logistic Regression (Balanced TF-IDF)": {
+      "accuracy": 0.7582,
+      "precision_suspicious": 0.729,
+      "recall_suspicious": 0.7549,
+      "f1_suspicious": 0.7417,
+      "roc_auc": 0.8276
     },
     "Complement Naive Bayes": {
-      "accuracy": 0.7018,
-      "precision_suspicious": 0.678,
-      "recall_suspicious": 0.7686,
-      "f1_suspicious": 0.7205,
-      "roc_auc": 0.7788
+      "accuracy": 0.7482,
+      "precision_suspicious": 0.7148,
+      "recall_suspicious": 0.753,
+      "f1_suspicious": 0.7334,
+      "roc_auc": 0.8198
+    },
+    "Multinomial Naive Bayes": {
+      "accuracy": 0.7509,
+      "precision_suspicious": 0.7189,
+      "recall_suspicious": 0.753,
+      "f1_suspicious": 0.7355,
+      "roc_auc": 0.8207
     },
     "Calibrated SGD (Modified Huber)": {
-      "accuracy": 0.7183,
-      "precision_suspicious": 0.7167,
-      "recall_suspicious": 0.7219,
-      "f1_suspicious": 0.7193,
-      "roc_auc": 0.7844
+      "accuracy": 0.7445,
+      "precision_suspicious": 0.7264,
+      "recall_suspicious": 0.7134,
+      "f1_suspicious": 0.7198,
+      "roc_auc": 0.794
     }
   },
   "best_model_test_metrics": {
-    "accuracy": 0.7216,
-    "precision_suspicious": 0.7155,
-    "recall_suspicious": 0.7356,
-    "f1_suspicious": 0.7254,
-    "roc_auc": 0.7932
+    "accuracy": 0.7582,
+    "precision_suspicious": 0.729,
+    "recall_suspicious": 0.7549,
+    "f1_suspicious": 0.7417,
+    "roc_auc": 0.8276
   },
   "confusion_matrix": [
     [
-      2364,
-      977
+      452,
+      142
     ],
     [
-      883,
-      2457
+      124,
+      382
     ]
   ],
   "confusion_matrix_labels": [
@@ -57,207 +64,207 @@
   ],
   "top_suspicious_words": [
     {
-      "word": "is",
-      "weight": 4.495
+      "word": "this",
+      "weight": 3.404
     },
     {
-      "word": "can",
-      "weight": 3.905
+      "word": "perfect",
+      "weight": 3.075
     },
     {
-      "word": "humidifier",
-      "weight": 3.874
+      "word": "easy",
+      "weight": 3.024
     },
     {
       "word": "and",
-      "weight": 3.759
-    },
-    {
-      "word": "my",
-      "weight": 3.63
-    },
-    {
-      "word": "this",
-      "weight": 3.367
-    },
-    {
-      "word": "the",
-      "weight": 3.311
-    },
-    {
-      "word": "to",
-      "weight": 3.127
+      "weight": 2.691
     },
     {
       "word": "good",
-      "weight": 2.805
+      "weight": 2.674
     },
     {
-      "word": "diffuser",
-      "weight": 2.786
+      "word": "my",
+      "weight": 2.506
     },
     {
-      "word": "keyboard",
-      "weight": 2.764
+      "word": "fast",
+      "weight": 2.124
     },
     {
-      "word": "it",
-      "weight": 2.655
+      "word": "easy to",
+      "weight": 2.019
     },
     {
-      "word": "with",
-      "weight": 2.546
+      "word": "these",
+      "weight": 2.006
     },
     {
-      "word": "its",
-      "weight": 2.474
+      "word": "nice",
+      "weight": 1.956
     },
     {
-      "word": "gloves",
-      "weight": 2.416
-    },
-    {
-      "word": "oil",
-      "weight": 2.408
-    },
-    {
-      "word": "bubbles",
-      "weight": 2.406
-    },
-    {
-      "word": "need",
-      "weight": 2.398
-    },
-    {
-      "word": "light",
-      "weight": 2.39
-    },
-    {
-      "word": "water",
-      "weight": 2.381
-    },
-    {
-      "word": "sleep",
-      "weight": 2.35
-    },
-    {
-      "word": "pretty",
-      "weight": 2.22
-    },
-    {
-      "word": "also",
-      "weight": 2.183
+      "word": "well",
+      "weight": 1.951
     },
     {
       "word": "really",
-      "weight": 2.179
+      "weight": 1.929
     },
     {
-      "word": "any",
-      "weight": 2.164
+      "word": "love",
+      "weight": 1.874
+    },
+    {
+      "word": "can",
+      "weight": 1.862
+    },
+    {
+      "word": "also",
+      "weight": 1.856
+    },
+    {
+      "word": "so",
+      "weight": 1.806
+    },
+    {
+      "word": "me",
+      "weight": 1.788
+    },
+    {
+      "word": "super",
+      "weight": 1.669
+    },
+    {
+      "word": "expectations",
+      "weight": 1.647
+    },
+    {
+      "word": "am",
+      "weight": 1.553
+    },
+    {
+      "word": "is good",
+      "weight": 1.549
+    },
+    {
+      "word": "computer",
+      "weight": 1.537
+    },
+    {
+      "word": "is",
+      "weight": 1.532
+    },
+    {
+      "word": "to",
+      "weight": 1.51
+    },
+    {
+      "word": "he",
+      "weight": 1.502
     }
   ],
   "top_genuine_words": [
     {
       "word": "not",
-      "weight": -3.151
-    },
-    {
-      "word": "months",
-      "weight": -2.644
-    },
-    {
-      "word": "broke",
-      "weight": -2.611
-    },
-    {
-      "word": "band",
-      "weight": -2.494
+      "weight": -3.976
     },
     {
       "word": "only",
-      "weight": -2.164
-    },
-    {
-      "word": "for the",
-      "weight": -2.101
-    },
-    {
-      "word": "leather",
-      "weight": -2.004
-    },
-    {
-      "word": "stars",
-      "weight": -1.973
-    },
-    {
-      "word": "purchased",
-      "weight": -1.929
-    },
-    {
-      "word": "christmas",
-      "weight": -1.914
-    },
-    {
-      "word": "thermometer",
-      "weight": -1.871
-    },
-    {
-      "word": "off",
-      "weight": -1.825
-    },
-    {
-      "word": "would not",
-      "weight": -1.798
+      "weight": -2.047
     },
     {
       "word": "but",
-      "weight": -1.777
+      "weight": -1.937
     },
     {
-      "word": "fan",
-      "weight": -1.711
+      "word": "however",
+      "weight": -1.708
     },
     {
-      "word": "issue",
-      "weight": -1.69
+      "word": "broke",
+      "weight": -1.676
     },
     {
-      "word": "returned",
-      "weight": -1.661
+      "word": "then",
+      "weight": -1.671
     },
     {
-      "word": "cards",
-      "weight": -1.653
+      "word": "for the",
+      "weight": -1.671
     },
     {
-      "word": "not recommend",
-      "weight": -1.638
+      "word": "months",
+      "weight": -1.617
     },
     {
-      "word": "hoping",
-      "weight": -1.614
+      "word": "not work",
+      "weight": -1.584
     },
     {
-      "word": "unless",
-      "weight": -1.603
+      "word": "worked",
+      "weight": -1.537
     },
     {
-      "word": "the band",
-      "weight": -1.577
+      "word": "disappointed",
+      "weight": -1.524
     },
     {
-      "word": "the time",
-      "weight": -1.575
+      "word": "stopped",
+      "weight": -1.498
     },
     {
-      "word": "case",
-      "weight": -1.569
+      "word": "after",
+      "weight": -1.478
     },
     {
-      "word": "disappointing",
-      "weight": -1.566
+      "word": "is not",
+      "weight": -1.464
+    },
+    {
+      "word": "isn",
+      "weight": -1.452
+    },
+    {
+      "word": "work",
+      "weight": -1.441
+    },
+    {
+      "word": "off",
+      "weight": -1.414
+    },
+    {
+      "word": "didn",
+      "weight": -1.356
+    },
+    {
+      "word": "would not",
+      "weight": -1.288
+    },
+    {
+      "word": "the",
+      "weight": -1.267
+    },
+    {
+      "word": "doesn",
+      "weight": -1.265
+    },
+    {
+      "word": "short",
+      "weight": -1.245
+    },
+    {
+      "word": "but the",
+      "weight": -1.227
+    },
+    {
+      "word": "stopped working",
+      "weight": -1.163
+    },
+    {
+      "word": "is that",
+      "weight": -1.163
     }
   ],
-  "methodology": "TF-IDF (unigrams + bigrams, sublinear tf) + Calibrated Linear Classifier. Stratified 75/25 split with exclusive reviewer deduplication."
+  "methodology": "Word + Character N-Gram Feature Union (Sublinear TF-IDF) + Calibrated Classifier. Stratified 75/25 split with exclusive reviewer deduplication."
 }

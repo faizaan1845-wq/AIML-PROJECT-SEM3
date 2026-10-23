@@ -207,7 +207,26 @@ def fetch_product_reviews_from_url(url, catalog_list=None):
     inferred_title = extract_title_from_url(clean_url)
     db = get_asin_db()
     
-    # Priority 1: Check ASIN Database (2,990+ Real Amazon Products)
+    # Priority 1: Check Catalog List if provided (Curated Balanced Benchmark Reviews)
+    if asin and catalog_list:
+        for item in catalog_list:
+            item_asin = str(item.get("asin", "")).upper()
+            if asin == item_asin or asin in item_asin:
+                sample_revs = item.get("sample_reviews", [])
+                revs = [{"rating": float(r.get("stars", 5)), "review_text": r.get("text", "")} for r in sample_revs]
+                return {
+                    "status": "success",
+                    "source": "Verified Electronics Catalog",
+                    "asin": item.get("asin"),
+                    "product_title": item.get("title", inferred_title),
+                    "displayed_rating": item.get("displayed_rating"),
+                    "authentic_rating": item.get("authentic_rating"),
+                    "inflation_delta": item.get("inflation_delta"),
+                    "reviews": revs,
+                    "notes": f"Found ASIN `{asin}` in indexed electronics catalog with balanced organic reviews."
+                }
+
+    # Priority 2: Check ASIN Database (2,990+ Real Amazon Products)
     if asin and asin in db:
         item = db[asin]
         return {
@@ -221,25 +240,6 @@ def fetch_product_reviews_from_url(url, catalog_list=None):
             "reviews": item.get("reviews", []),
             "notes": f"Matched real Amazon ASIN `{asin}` from verified marketplace review database."
         }
-
-    # Priority 2: Check Catalog List if provided
-    if asin and catalog_list:
-        for item in catalog_list:
-            item_asin = str(item.get("asin", "")).upper()
-            if asin in item_asin:
-                sample_revs = item.get("sample_reviews", [])
-                revs = [{"rating": float(r.get("stars", 5)), "review_text": r.get("text", "")} for r in sample_revs]
-                return {
-                    "status": "success",
-                    "source": "Verified Electronics Catalog",
-                    "asin": item.get("asin"),
-                    "product_title": item.get("title", inferred_title),
-                    "displayed_rating": item.get("displayed_rating"),
-                    "authentic_rating": item.get("authentic_rating"),
-                    "inflation_delta": item.get("inflation_delta"),
-                    "reviews": revs,
-                    "notes": f"Found ASIN `{asin}` in indexed electronics catalog."
-                }
 
     # Priority 3: Live HTTP Scrape with Browser Emulation
     live_reviews = []
