@@ -129,54 +129,17 @@ $$\nabla_b J = \frac{1}{m} \mathbf{1}^T (\sigma(Xw + b\mathbf{1}) - y)$$
 
 ---
 
-### 2.4 Gradient Descent vs. Gradient Ascent: Mathematical Equivalence
+### 2.4 The Gradient Descent Parameter Update Rule
 
-#### The Gradient Descent Update Rule:
-Gradient Descent searches for the minimum of the cost function $J(\theta)$ by stepping in the direction of the **negative gradient** ($-\nabla J$):
-$$w_j^{(t+1)} := w_j^{(t)} - \alpha \frac{\partial J}{\partial w_j}$$
-$$b^{(t+1)} := b^{(t)} - \alpha \frac{\partial J}{\partial b}$$
-where $\alpha > 0$ represents the learning rate (step size).
+Gradient Descent minimizes the cost function $J(\mathbf{w}, b)$ by stepping in the opposite direction of the gradient ($-\nabla J$):
 
-#### The Gradient Ascent Update Rule:
-Gradient Ascent searches for the maximum of the log-likelihood function $\ell(\theta)$ by stepping in the direction of the **positive gradient** ($+\nabla \ell$):
-$$\theta^{(t+1)} := \theta^{(t)} + \eta \nabla \ell(\theta)$$
+$$\boxed{w_j^{(t+1)} := w_j^{(t)} - \alpha \frac{\partial J}{\partial w_j}}$$
+$$\boxed{b^{(t+1)} := b^{(t)} - \alpha \frac{\partial J}{\partial b}}$$
 
-#### Equivalence Proof:
-Recall that:
-$$J(\theta) = -\frac{1}{m} \ell(\theta) \implies \nabla_\theta J(\theta) = -\frac{1}{m} \nabla_\theta \ell(\theta) \implies \nabla_\theta \ell(\theta) = -m \nabla_\theta J(\theta)$$
+where $\alpha > 0$ denotes the **learning rate** (step size).
 
-Substituting $\nabla_\theta \ell(\theta)$ into the Gradient Ascent update rule with step size $\eta = \frac{\alpha}{m}$:
-$$\theta^{(t+1)} = \theta^{(t)} + \frac{\alpha}{m} (-m \nabla_\theta J(\theta)) = \theta^{(t)} - \alpha \nabla_\theta J(\theta)$$
-
-$$\boxed{\min_{\theta} J(\theta) \iff \max_{\theta} \ell(\theta)}$$
-Both algorithms trace the identical trajectory across the parameter manifold $\mathbb{R}^{n+1}$.
-
----
-
-### 2.5 Convexity and Global Convergence Guarantee (Hessian Matrix)
-
-To prove that Gradient Descent will never become trapped in a suboptimal local minimum, we analyze the second partial derivatives (the **Hessian Matrix** $H = \nabla^2 J(w)$).
-
-The second partial derivative with respect to weights $w_j$ and $w_k$ is:
-$$\frac{\partial^2 J}{\partial w_j \partial w_k} = \frac{\partial}{\partial w_k} \left[ \frac{1}{m} \sum_{i=1}^m (\sigma(z^{(i)}) - y^{(i)}) x_j^{(i)} + \frac{\lambda}{m} w_j \right]$$
-$$= \frac{1}{m} \sum_{i=1}^m \sigma'(z^{(i)}) x_j^{(i)} x_k^{(i)} + \frac{\lambda}{m} \delta_{jk}$$
-where $\sigma'(z^{(i)}) = \sigma(z^{(i)})(1 - \sigma(z^{(i)})) > 0$ for all finite $z^{(i)}$, and $\delta_{jk}$ is the Kronecker delta.
-
-In matrix notation:
-$$H = \nabla^2 J(w) = \frac{1}{m} X^T D X + \frac{\lambda}{m} I$$
-where $D = \text{diag}(\sigma(z^{(1)})(1 - \sigma(z^{(1)})), \dots, \sigma(z^{(m)})(1 - \sigma(z^{(m)})))$ is a diagonal matrix with strictly positive diagonal entries ($D_{ii} > 0$).
-
-#### Positive Definiteness Proof:
-For any non-zero vector $v \in \mathbb{R}^n, v \ne 0$:
-$$v^T H v = v^T \left( \frac{1}{m} X^T D X + \frac{\lambda}{m} I \right) v = \frac{1}{m} (Xv)^T D (Xv) + \frac{\lambda}{m} v^T v$$
-Let $u = Xv \in \mathbb{R}^m$. Then:
-$$(Xv)^T D (Xv) = \sum_{i=1}^m D_{ii} u_i^2 \ge 0 \quad (\text{since } D_{ii} > 0 \text{ and } u_i^2 \ge 0)$$
-Furthermore, for $\lambda > 0$:
-$$\frac{\lambda}{m} v^T v = \frac{\lambda}{m} \|v\|_2^2 > 0$$
-
-$$\therefore v^T H v > 0 \quad \forall v \ne 0 \implies H \succ 0 \quad (\text{Strictly Positive Definite})$$
-
-**Conclusion:** The cost function $J(w, b)$ is **strictly convex**. By the Fundamental Theorem of Convex Optimization, **any stationary point where $\nabla J = 0$ is the unique global minimum**. Gradient Descent is mathematically guaranteed to converge to the optimal global solution.
+- If $\alpha$ is chosen appropriately (e.g., $\alpha = 0.15$), the parameters iteratively descend towards the minimum of the cost surface.
+- At each iteration $t$, the predicted probabilities $h^{(i)}$ become closer to the actual labels $y^{(i)}$, steadily reducing classification error.
 
 ---
 
@@ -323,22 +286,17 @@ Below are the exact mathematical derivations and questions typically asked durin
 2. **Non-Convexity:** If we wrap the linear hypothesis in a Sigmoid and use Mean Squared Error $J_{MSE} = \frac{1}{2m} \sum (\sigma(w^T x + b) - y)^2$, the second derivative $\frac{\partial^2 J}{\partial w^2}$ is non-positive definite in certain regions. The error surface becomes non-convex with numerous local traps.
 3. **Vanishing Gradients:** Under MSE, $\frac{\partial J}{\partial w_j} \propto \sigma'(z) \cdot (\sigma(z) - y)$. When an outlier review is grossly misclassified ($\sigma(z) = 0$ while $y = 1$), $\sigma'(z) \to 0$, causing the gradient to vanish precisely when the model is most wrong! Cross-entropy eliminates this term because the denominator cancels $\sigma'(z)$.
 
-### Q3: "Prove that Gradient Descent on Cost $J$ is mathematically equivalent to Gradient Ascent on Log-Likelihood $\ell$."
+### Q3: "How does the learning rate ($\alpha$) affect Gradient Descent convergence?"
 **Whiteboard Step-by-Step Response:**
-1. Objective relationship: $J(\theta) = -\frac{1}{m} \ell(\theta)$.
-2. Take gradient of both sides: $\nabla J(\theta) = -\frac{1}{m} \nabla \ell(\theta) \implies \nabla \ell(\theta) = -m \nabla J(\theta)$.
-3. Gradient Ascent update: $\theta^{(t+1)} = \theta^{(t)} + \eta \nabla \ell(\theta)$.
-4. Choose step size $\eta = \frac{\alpha}{m}$:
-   $$\theta^{(t+1)} = \theta^{(t)} + \frac{\alpha}{m} (-m \nabla J(\theta)) = \theta^{(t)} - \alpha \nabla J(\theta)$$
-5. This is identically the Gradient Descent update rule $\blacksquare$.
+1. **Too Small ($\alpha \le 0.01$):** Gradients make minuscule updates $\Delta w = -\alpha \nabla J$. The algorithm requires thousands of iterations, converging extremely slowly.
+2. **Optimal ($\alpha \approx 0.15$):** Steady exponential decrease in loss with smooth parameter convergence towards the minimum.
+3. **Too Large ($\alpha \ge 0.8$):** The step overshoots the minimum point on the cost bowl. The loss begins oscillating wildly and diverges towards infinity ($J \to \infty$).
 
-### Q4: "How does the Hessian matrix prove that the model finds the true global minimum?"
+### Q4: "What is the difference between Batch GD, Stochastic GD (SGD), and Mini-Batch GD?"
 **Whiteboard Step-by-Step Response:**
-1. Compute the second derivative matrix: $H = \nabla^2 J(w) = \frac{1}{m} X^T D X + \frac{\lambda}{m} I$.
-2. Note that $D_{ii} = \sigma(z_i)(1 - \sigma(z_i)) > 0$ for all real $z_i$.
-3. For any non-zero vector $v \ne \mathbf{0}$: $v^T H v = \frac{1}{m} (Xv)^T D (Xv) + \frac{\lambda}{m} \|v\|^2 \ge 0 + \frac{\lambda}{m} \|v\|^2 > 0$.
-4. Since $v^T H v > 0$, the Hessian is strictly positive definite everywhere ($H \succ 0$).
-5. A strictly positive definite Hessian over $\mathbb{R}^n$ guarantees strict convexity, ensuring that any stationary point $\nabla J = \mathbf{0}$ is unique and globally optimal.
+1. **Batch Gradient Descent (BGD):** Computes the gradient over the entire dataset ($m$ samples) per step. Update is exact, smooth, and deterministic, but computationally heavy for large datasets.
+2. **Stochastic Gradient Descent (SGD):** Updates parameters after each single sample ($m = 1$). Fast and memory-efficient ($O(1)$), but noisy and oscillates around the minimum.
+3. **Mini-Batch GD (MBGD):** Compromise that evaluates batches of size $B$ (e.g. $B = 32$). Exploits vectorized SIMD/GPU operations while retaining fast parameter updates.
 
 ---
 
@@ -346,6 +304,6 @@ Below are the exact mathematical derivations and questions typically asked durin
 
 In this CIE-3 project component:
 1. We successfully modeled review authenticity classification as a calculus optimization problem.
-2. We provided complete mathematical proofs for Sigmoid differentiation, Multivariate Chain Rule gradients, Gradient Descent vs Ascent equivalence, and Hessian positive definiteness.
+2. We derived the essential mathematical relationships: Sigmoid activation, Binary Cross-Entropy loss, analytical gradients via the multivariable chain rule, and the Gradient Descent parameter update rule.
 3. We implemented Batch, Stochastic, and Mini-Batch Gradient Descent in vectorized Python, demonstrating a **95.9% loss reduction** from initial theoretical loss $\ln(2) \approx 0.69315$ to $0.02843$.
 4. We integrated this optimization engine directly into our interactive **TrustRate AI** Streamlit dashboard under a dedicated Calculus & Optimization laboratory mode.

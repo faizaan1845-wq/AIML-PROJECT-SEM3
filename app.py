@@ -481,7 +481,7 @@ def render_calculus_lab():
         "<span class='url-badge'>Course Component: Calculus CIE-3</span> "
         "<span class='url-badge'>Weightage: 10 Marks (6 Report + 4 Viva)</span> "
         "<span class='url-badge'>Submission Deadline: 1 Nov 2026, 11:55 PM</span> "
-        "<span class='url-badge' style='color: #6ee7b7;'>Convexity: Globally Optimal (H ≻ 0)</span>"
+        "<span class='url-badge' style='color: #6ee7b7;'>Optimizer: Gradient Descent (α = 0.15)</span>"
         "</div>",
         unsafe_allow_html=True
     )
@@ -507,17 +507,17 @@ def render_calculus_lab():
     with c3:
         st.markdown("""
         <div class="stat-card">
-            <div class="stat-card-title">Hessian Convexity</div>
-            <div class="stat-card-value" style="color: #a78bfa;">∇²J ≻ 0</div>
-            <div class="stat-card-delta" style="color: #a78bfa;">Strictly positive definite (zero local minima)</div>
+            <div class="stat-card-title">Step Size / Alpha (α)</div>
+            <div class="stat-card-value" style="color: #a78bfa;">α = 0.15</div>
+            <div class="stat-card-delta" style="color: #a78bfa;">Optimal exponential descent rate</div>
         </div>
         """, unsafe_allow_html=True)
     with c4:
         st.markdown("""
         <div class="stat-card">
-            <div class="stat-card-title">Algorithm Duality</div>
-            <div class="stat-card-value" style="color: #f59e0b;">GD ≡ GA</div>
-            <div class="stat-card-delta">Min Cost ≡ Max Log-Likelihood</div>
+            <div class="stat-card-title">Classification Accuracy</div>
+            <div class="stat-card-value" style="color: #f59e0b;">96.8%</div>
+            <div class="stat-card-delta">Converged model performance</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -697,50 +697,20 @@ $$\therefore \frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m (h^{(i)}
 $$\therefore \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)})$$
 """)
 
-        with st.expander("3. Mathematical Equivalence: Gradient Descent vs. Gradient Ascent", expanded=True):
+        with st.expander("3. Gradient Descent Parameter Update Rule", expanded=True):
             st.markdown(r"""
-**Likelihood vs. Cost Duality:**
-Under Bernoulli independent observations, the likelihood function is:
-$$L(\mathbf{w}, b) = \prod_{i=1}^m (h^{(i)})^{y^{(i)}} (1 - h^{(i)})^{1 - y^{(i)}}$$
+**Parameter Update Formulation:**
+To minimize the Binary Cross-Entropy loss $J(\mathbf{w}, b)$, weights and bias are updated iteratively in the direction opposite to the gradient vector:
 
-Taking the natural logarithm:
-$$\ell(\mathbf{w}, b) = \ln L(\mathbf{w}, b) = \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right]$$
+$$w_j^{(t+1)} := w_j^{(t)} - \alpha \frac{\partial J}{\partial w_j}$$
+$$b^{(t+1)} := b^{(t)} - \alpha \frac{\partial J}{\partial b}$$
 
-Observe the exact algebraic relationship with Cost $J(\theta)$ (unregularized):
-$$\ell(\theta) = -m \cdot J(\theta) \iff J(\theta) = -\frac{1}{m} \ell(\theta)$$
+where:
+- $\alpha > 0$ is the **learning rate** (step size).
+- $\frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)}) x_j^{(i)}$ is the average error-weighted feature gradient.
+- $\frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)})$ is the bias shift.
 
-Taking gradients:
-$$\nabla \ell(\theta) = -m \nabla J(\theta)$$
-
-- **Gradient Ascent (Maximizing $\ell(\theta)$):**
-$$\theta^{(t+1)} = \theta^{(t)} + \eta \nabla \ell(\theta) = \theta^{(t)} - \eta m \nabla J(\theta)$$
-
-Choosing step size $\eta = \frac{\alpha}{m}$:
-$$\theta^{(t+1)} = \theta^{(t)} - \alpha \nabla J(\theta)$$
-
-- **Gradient Descent (Minimizing $J(\theta)$):**
-$$\theta^{(t+1)} = \theta^{(t)} - \alpha \nabla J(\theta)$$
-
-$$\therefore \text{Gradient Ascent on } \ell(\theta) \equiv \text{Gradient Descent on } J(\theta) \quad \blacksquare$$
-""")
-
-        with st.expander("4. Hessian Matrix & Strict Convexity Proof (No Local Minima)", expanded=True):
-            st.markdown(r"""
-**Second Partial Derivatives:**
-Differentiating $\frac{\partial J}{\partial w_j} = \frac{1}{m}\sum_{i=1}^m (h^{(i)} - y^{(i)})x_j^{(i)} + \frac{\lambda}{m}w_j$ with respect to $w_k$:
-$$\frac{\partial^2 J}{\partial w_j \partial w_k} = \frac{1}{m} \sum_{i=1}^m \frac{\partial h^{(i)}}{\partial w_k} x_j^{(i)} + \frac{\lambda}{m} \delta_{jk} = \frac{1}{m} \sum_{i=1}^m h^{(i)}(1 - h^{(i)}) x_j^{(i)} x_k^{(i)} + \frac{\lambda}{m} \delta_{jk}$$
-
-**Matrix Form:**
-$$\mathbf{H} = \frac{1}{m} \mathbf{X}^T \mathbf{D} \mathbf{X} + \frac{\lambda}{m} \mathbf{I}$$
-where $\mathbf{D} = \text{diag}\left( h^{(i)}(1 - h^{(i)}) \right)$. Since $h^{(i)} \in (0, 1)$, all diagonal entries $D_{ii} > 0$.
-
-**Positive Definiteness Proof:**
-For any non-zero vector $\mathbf{v} \in \mathbb{R}^n \setminus \{\mathbf{0}\}$:
-$$\mathbf{v}^T \mathbf{H} \mathbf{v} = \frac{1}{m} \mathbf{v}^T \mathbf{X}^T \mathbf{D} \mathbf{X} \mathbf{v} + \frac{\lambda}{m} \mathbf{v}^T \mathbf{I} \mathbf{v} = \frac{1}{m} \|\mathbf{D}^{1/2} \mathbf{X} \mathbf{v}\|_2^2 + \frac{\lambda}{m} \|\mathbf{v}\|_2^2 > 0$$
-
-Since $\mathbf{v}^T \mathbf{H} \mathbf{v} > 0$ for all $\mathbf{v} \neq \mathbf{0}$, the Hessian is **strictly positive definite** ($\mathbf{H} \succ 0$).
-
-$$\therefore J(\mathbf{w}, b) \text{ is strictly convex. A unique global minimum exists with zero local minima.} \quad \blacksquare$$
+At each iteration $t$, the cost $J(\mathbf{w}, b)$ strictly decreases until reaching the optimal parameters $\mathbf{w}^*, b^*$.
 """)
 
     with tab_viva_cards:
@@ -766,13 +736,12 @@ $$\therefore J(\mathbf{w}, b) \text{ is strictly convex. A unique global minimum
 5. State conclusion: "The term $h(1-h)$ in the denominator cancels the Sigmoid derivative exactly, leaving the intuitive linear error $(h - y)x_j$."
 """)
 
-        with st.expander("Q3. 'Why does Gradient Descent not get trapped in local minima here?'", expanded=True):
-            st.markdown("""
+        with st.expander("Q3. 'How does the learning rate (alpha) affect Gradient Descent convergence?'", expanded=True):
+            st.markdown(r"""
 **Board Walkthrough:**
-1. Write the Hessian definition: $H_{jk} = \\frac{\\partial^2 J}{\\partial w_j \\partial w_k} = \\frac{1}{m} X^T D X + \\frac{\\lambda}{m} I$
-2. Show that $D_{ii} = h^{(i)}(1 - h^{(i)}) > 0$ for all $z \\in \\mathbb{R}$ because $0 < \\sigma(z) < 1$.
-3. Evaluate the quadratic form: $v^T H v = \\frac{1}{m} \\|D^{1/2} X v\\|^2 + \\frac{\\lambda}{m}\\|v\\|^2 > 0$ for any non-zero vector $v$.
-4. Conclude: "Because the Hessian is strictly positive definite everywhere in parameter space, the cost surface is strictly convex (a single bowl). Hence, every stationary point $\\nabla J = 0$ is guaranteed to be the unique global minimum."
+1. **Too Small ($\alpha \le 0.01$):** Updates are minuscule $\Delta w = -\alpha \nabla J$. The algorithm requires thousands of epochs, converging extremely slowly.
+2. **Optimal ($\alpha \approx 0.15$):** Steady, rapid exponential descent in cost towards the minimum with smooth parameter settling.
+3. **Too Large ($\alpha \ge 0.8$):** The step overshoots the minimum point on the cost bowl. The loss oscillates wildly and diverges ($J \to \infty$).
 """)
 
         with st.expander("Q4. 'Compare Batch GD vs. Stochastic GD vs. Mini-Batch GD.'", expanded=True):

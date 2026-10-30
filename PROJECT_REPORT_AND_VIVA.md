@@ -193,40 +193,31 @@ $$\text{Inflation Percentage} = \frac{\Delta R}{R_{\text{displayed}}} \times 100
 
 ---
 
-## 8. Calculus CIE-3 Project Component: Optimization using Gradient Descent & Gradient Ascent
+## 8. Calculus CIE-3 Project Component: Optimization using Gradient Descent
 
 > **Full University Report Available in:** [`CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md`](CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md)  
 > **Course Component:** Calculus CIE-3 (10 Marks: 6 Report + 4 Viva)  
 > **Submission Deadline:** 1 November 2026, 11:55 PM
 
-### 8.1 Problem Formulation & Objective Function
-To classify review authenticity, we formulate the Binary Cross-Entropy Cost Function $J(\mathbf{w}, b)$ with $L_2$ Tikhonov Regularization:
-$$J(\mathbf{w}, b) = -\frac{1}{m} \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right] + \frac{\lambda}{2m} \|\mathbf{w}\|^2$$
-where $h^{(i)} = \sigma(\mathbf{w}^T \mathbf{x}^{(i)} + b) = \frac{1}{1 + e^{-(\mathbf{w}^T \mathbf{x}^{(i)} + b)}}$.
+### 8.1 Hypothesis & Cost Function
+To classify review authenticity, the probability that a review $i$ is deceptive is modeled by the **Sigmoid function**:
+$$h^{(i)} = \sigma(\mathbf{w}^T \mathbf{x}^{(i)} + b) = \frac{1}{1 + e^{-(\mathbf{w}^T \mathbf{x}^{(i)} + b)}}$$
 
-### 8.2 Analytical Gradient Derivation via Chain Rule
-Applying the multivariable chain rule $\frac{\partial J}{\partial w_j} = \frac{\partial J}{\partial h} \cdot \frac{\partial h}{\partial z} \cdot \frac{\partial z}{\partial w_j}$:
-$$\frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m \left( \sigma(\mathbf{w}^T \mathbf{x}^{(i)} + b) - y^{(i)} \right) x_j^{(i)} + \frac{\lambda}{m} w_j$$
-$$\frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m \left( \sigma(\mathbf{w}^T \mathbf{x}^{(i)} + b) - y^{(i)} \right)$$
+The overall error across $m$ reviews is measured by the **Binary Cross-Entropy (BCE) Cost Function**:
+$$J(\mathbf{w}, b) = -\frac{1}{m} \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right]$$
 
-### 8.3 Mathematical Equivalence: Gradient Descent $\equiv$ Gradient Ascent
-- **Total Dataset Log-Likelihood:** $\ell(\mathbf{w}, b) = -m \cdot J(\mathbf{w}, b)$.
-- **Gradient Relation:** $\nabla \ell(\theta) = -m \nabla J(\theta)$.
-- **Gradient Ascent Update Rule:**
-  $$\theta^{(t+1)} = \theta^{(t)} + \eta \nabla \ell(\theta) = \theta^{(t)} - \eta m \nabla J(\theta)$$
-- Setting step size $\eta = \frac{\alpha}{m}$ yields:
-  $$\theta^{(t+1)} = \theta^{(t)} - \alpha \nabla J(\theta)$$
-  which is mathematically identical to the Gradient Descent parameter update rule.
+### 8.2 Analytical Gradients via Calculus Chain Rule
+Using the multivariable chain rule $\frac{\partial J}{\partial w_j} = \frac{\partial J}{\partial h} \cdot \frac{\partial h}{\partial z} \cdot \frac{\partial z}{\partial w_j}$, the partial derivatives evaluate directly to:
+$$\frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m \left( h^{(i)} - y^{(i)} \right) x_j^{(i)}$$
+$$\frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m \left( h^{(i)} - y^{(i)} \right)$$
 
-### 8.4 Proof of Strict Convexity (No Local Minima)
-The Hessian matrix of second partial derivatives is:
-$$\mathbf{H} = \frac{1}{m} \mathbf{X}^T \mathbf{D} \mathbf{X} + \frac{\lambda}{m} \mathbf{I}$$
-where $\mathbf{D} = \text{diag}\left( h^{(i)}(1 - h^{(i)}) \right)$. Since $0 < h^{(i)} < 1$, all $D_{ii} > 0$. For any $\mathbf{v} \neq \mathbf{0}$:
-$$\mathbf{v}^T \mathbf{H} \mathbf{v} = \frac{1}{m} \|\mathbf{D}^{1/2} \mathbf{X} \mathbf{v}\|_2^2 + \frac{\lambda}{m} \|\mathbf{v}\|_2^2 > 0$$
-Since $\mathbf{H} \succ 0$ everywhere, $J(\mathbf{w}, b)$ is strictly convex, guaranteeing a unique global minimum.
+### 8.3 Gradient Descent Parameter Update Rule
+Parameters are iteratively updated in the direction of steepest descent with learning rate $\alpha$:
+$$w_j := w_j - \alpha \frac{\partial J}{\partial w_j}$$
+$$b := b - \alpha \frac{\partial J}{\partial b}$$
 
-### 8.5 Optimizer Performance
-- **Initial Loss:** $J(\mathbf{0}) = \ln(2) \approx 0.69315$
-- **Final Converged Loss (Batch GD):** $0.02843$ (**95.9% empirical loss reduction**)
-- **Mini-Batch GD (B=32):** Converged in 1.4× fewer total FLOPs.
+### 8.4 Empirical Optimizer Performance
+- **Initial Cost ($J$ at $\mathbf{0}$):** $J(0) = \ln(2) \approx 0.69315$
+- **Final Converged Cost:** $0.02843$ (**95.9% loss reduction**)
+- **Optimal Learning Rate:** $\alpha = 0.15$ for rapid, stable convergence.
 - **Interactive Lab:** Accessible directly inside `app.py` via sidebar option **📉 Calculus & Optimization Lab (CIE-3)**.
