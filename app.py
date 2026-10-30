@@ -828,45 +828,28 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
     ex_c1, ex_c2, ex_c3, ex_c4, ex_c5 = st.columns(5)
     
     selected_url = ""
-    preset_rating = 4.5
     if ex_c1.button("📱 iPhone 16\n(4.5★ -> 3.8★)", use_container_width=True):
         selected_url = "https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589"
-        preset_rating = 4.5
     if ex_c2.button("🎧 Earbuds\n(4.5★ -> 3.8★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/P001"
-        preset_rating = 4.5
     if ex_c3.button("⚡ 18W Fast Charger\n(4.3★ -> 1.8★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/B0836QVLD3"
-        preset_rating = 4.3
     if ex_c4.button("🔊 BT Speaker\n(4.2★ -> 1.9★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/B07Z8ZWQYV"
-        preset_rating = 4.2
     if ex_c5.button("📱 Galaxy Z Fold\n(4.0★ -> 3.4★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/B0FDL5T1PF"
-        preset_rating = 4.0
 
-    u_col1, u_col2 = st.columns([3, 1])
-    with u_col1:
-        url_input = st.text_input(
-            "Enter Amazon Product URL or ASIN:",
-            value=selected_url if selected_url else "https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589",
-            placeholder="e.g. https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589"
-        )
-    with u_col2:
-        store_rating = st.number_input(
-            "Amazon Listed Rating:",
-            min_value=1.0,
-            max_value=5.0,
-            value=float(preset_rating),
-            step=0.1,
-            help="The advertised star rating shown on the Amazon product page (e.g., 4.5★ as shown on Amazon)."
-        )
+    url_input = st.text_input(
+        "Enter Amazon Product URL or ASIN:",
+        value=selected_url if selected_url else "https://www.amazon.in/Samsung-Smartphone-Silverblue-Snapdragon-ProVisual/dp/B0DSKNKCYX",
+        placeholder="e.g. https://www.amazon.in/... or paste any Amazon product link"
+    )
 
     run_audit = st.button("🚀 Audit Product URL & Diagnose", type="primary")
 
     if run_audit or selected_url:
         with st.spinner("Retrieving customer reviews and running forensic NLP models..."):
-            extracted = fetch_product_reviews_from_url(url_input, catalog_list=catalog, target_rating=store_rating)
+            extracted = fetch_product_reviews_from_url(url_input, catalog_list=catalog)
 
         if extracted.get("status") == "captcha_blocked":
             st.warning("🔒 **Amazon Bot Protection Active:** Amazon returned an anti-bot CAPTCHA for this request.")
@@ -875,6 +858,7 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
             product_title = extracted["product_title"]
             source = extracted["source"]
             asin_found = extracted["asin"]
+            displayed_rating = extracted.get("displayed_rating")
             reviews_list = extracted.get("reviews", [])
 
             if not reviews_list:
@@ -886,7 +870,7 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
                     rating_col="rating",
                     text_col="review_text",
                     model=model,
-                    target_displayed_rating=store_rating
+                    target_displayed_rating=displayed_rating
                 )
 
                 st.divider()
