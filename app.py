@@ -26,6 +26,7 @@ warnings.filterwarnings("ignore")
 from model_utils import analyze_review_text, compute_rating_inflation, SUSPICIOUS_TRIGGER_WORDS
 from aspect_analyzer import extract_aspect_sentiment_and_failures
 from scraper import fetch_product_reviews_from_url, get_asin_db
+from gradient_descent_optimizer import GradientDescentOptimizer, run_synthetic_benchmark
 
 BASE = Path(__file__).resolve().parent
 DATA_DIR = BASE / "data"
@@ -33,6 +34,7 @@ CATALOG_PATH = DATA_DIR / "electronics_catalog.json"
 ASIN_DB_PATH = DATA_DIR / "asin_database.json"
 MODEL_PATH = BASE / "model.joblib"
 METRICS_PATH = BASE / "metrics.json"
+CIE3_REPORT_PATH = BASE / "CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md"
 
 st.set_page_config(
     page_title="TrustRate AI — E-Commerce Rating Deflator & Diagnostics",
@@ -323,25 +325,23 @@ def render_aspect_diagnostics_ui(aspect_data: dict):
     st.markdown("### 🛠️ Product Failure Diagnostics & Real-World Pros/Cons")
     st.caption("Extracted directly from genuine customer reviews. Analyzes primary hardware/software failure modes and contrasts authentic pros against real customer trade-offs.")
 
-    # 1. Executive Failure Summary Banner
+    # 1. Executive Failure Summary Banner (Customer-Friendly)
     risk_level = summary.get("failure_risk_level", "Moderate")
     risk_score = summary.get("failure_risk_score", 50)
     risk_color = summary.get("failure_risk_color", "#f43f5e")
 
-    st.markdown(f"""
-    <div class="diagnostic-banner" style="border-left-color: {risk_color};">
-        <div class="diagnostic-header">
-            <span class="diagnostic-title">🔍 Executive Failure Diagnosis: {summary.get('primary_failure_reason', 'Component Durability')}</span>
-            <span class="diagnostic-badge" style="background: {risk_color}25; color: {risk_color}; border: 1px solid {risk_color};">
-                {risk_level} • Score: {risk_score}/100
-            </span>
-        </div>
-        <div class="diagnostic-body">
-            <strong>Durability Assessment:</strong> {summary.get('durability_verdict', 'Standard consumer wear rates.')}<br>
-            {summary.get('executive_diagnostic', '')}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    banner_html = (
+        f'<div class="diagnostic-banner" style="border-left-color: {risk_color};">'
+        f'<div class="diagnostic-header">'
+        f'<span class="diagnostic-title">🔍 What Buyers Should Know: {summary.get("primary_failure_reason", "Hardware Durability")}</span>'
+        f'<span class="diagnostic-badge" style="background: {risk_color}25; color: {risk_color}; border: 1px solid {risk_color};">'
+        f'{risk_level} • Risk Score: {risk_score}/100</span>'
+        f'</div>'
+        f'<div class="diagnostic-body">'
+        f'{summary.get("executive_diagnostic", "")}'
+        f'</div></div>'
+    )
+    st.markdown(banner_html, unsafe_allow_html=True)
 
     # 2. Tabs: Failure Root Causes vs Pros & Cons vs Aspect Scorecard
     tab_failures, tab_pros_cons, tab_scorecard = st.tabs([
@@ -354,111 +354,468 @@ def render_aspect_diagnostics_ui(aspect_data: dict):
         if not failure_modes:
             st.info("✅ No recurrent acute hardware or software failures detected in the analyzed customer reviews.")
         else:
-            st.markdown(f"**Identified Engineering Failure Modes Across Critical Reviews:**")
+            st.markdown(f"**Identified Hardware & Component Failure Areas:**")
             
-            # Display failure mode cards in 2 columns
             f_col1, f_col2 = st.columns(2)
             for idx, mode in enumerate(failure_modes):
                 target_col = f_col1 if idx % 2 == 0 else f_col2
                 with target_col:
-                    quotes_html = ""
-                    for q in mode.get("evidence_quotes", [])[:3]:
-                        quotes_html += f"""
-                        <div class="quote-box">
-                            <span class="quote-box-star">★{q['rating']}</span> "{q['quote']}"
-                        </div>
-                        """
-                    
-                    st.markdown(f"""
-                    <div class="failure-card" style="border-left-color: {mode['severity_color']};">
-                        <div class="failure-card-title">
-                            <span>{mode['icon']} {mode['category']}</span>
-                            <span class="failure-incidence">{mode['incidence_pct']:.1f}% Critical Incidence</span>
-                        </div>
-                        <div class="failure-cause">
-                            <strong>Root Cause:</strong> {mode['root_cause_summary']}
-                        </div>
-                        <div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-top: 8px;">
-                            Actual Review Proof ({mode['complaint_count']} reports):
-                        </div>
-                        {quotes_html}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    quotes_html = "".join([
+                        f'<div class="quote-box"><span class="quote-box-star">★{q["rating"]}</span> "{q["quote"]}"</div>'
+                        for q in mode.get("evidence_quotes", [])[:3]
+                    ])
+                    card_html = (
+                        f'<div class="failure-card" style="border-left-color: {mode["severity_color"]};">'
+                        f'<div class="failure-card-title">'
+                        f'<span>{mode["icon"]} {mode["category"]}</span>'
+                        f'<span class="failure-incidence">{mode["incidence_pct"]:.1f}% Critical Incidence</span>'
+                        f'</div>'
+                        f'<div class="failure-cause"><strong>What Goes Wrong:</strong> {mode["root_cause_summary"]}</div>'
+                        f'<div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-top: 8px;">'
+                        f'Verified Customer Proof ({mode["complaint_count"]} reports):</div>'
+                        f'{quotes_html}</div>'
+                    )
+                    st.markdown(card_html, unsafe_allow_html=True)
 
     with tab_pros_cons:
         col_pro, col_con = st.columns(2)
         
         with col_pro:
             st.markdown("#### 🟢 Authentic Pros (Verified Genuine Praise)")
-            st.caption("Extracted strictly from verified organic customer reviews with positive sentiment.")
+            st.caption("Extracted strictly from verified organic customer reviews. Artificial promotional hype is filtered out.")
             if not pros:
-                st.info("No definitive pros identified in this review sample.")
+                st.info("No verified organic pros identified — all 5-star reviews were flagged as promotional or unverified.")
             else:
                 for p in pros:
-                    st.markdown(f"""
-                    <div class="pro-card">
-                        <div class="pro-title">
-                            <span>{p['icon']} {p['aspect_title']}</span>
-                            <span class="pro-score">+{p['sentiment_score']}% Positive</span>
-                        </div>
-                        <div class="quote-box" style="border-left-color: #10b981;">
-                            <span class="quote-box-star">★{p['rating']}</span> "{p['evidence_quote']}"
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    pro_html = (
+                        f'<div class="pro-card">'
+                        f'<div class="pro-title">'
+                        f'<span>{p["icon"]} {p["aspect_title"]}</span>'
+                        f'<span class="pro-score">+{p["sentiment_score"]}% Positive</span>'
+                        f'</div>'
+                        f'<div class="quote-box" style="border-left-color: #10b981;">'
+                        f'<span class="quote-box-star">★{p["rating"]}</span> "{p["evidence_quote"]}"'
+                        f'</div></div>'
+                    )
+                    st.markdown(pro_html, unsafe_allow_html=True)
 
         with col_con:
             st.markdown("#### 🔴 Authentic Cons (Real Customer Limitations)")
-            st.caption("Extracted from honest reviews detailing practical limitations and trade-offs.")
+            st.caption("Extracted from honest customer reviews detailing practical limitations and trade-offs.")
             if not cons:
-                st.success("No significant negative trade-offs reported by customers.")
+                st.success("No significant recurring trade-offs reported by customers.")
             else:
                 for c in cons:
-                    st.markdown(f"""
-                    <div class="con-card">
-                        <div class="con-title">
-                            <span>{c['icon']} {c['aspect_title']}</span>
-                            <span class="con-score">{c['impact_level']}</span>
-                        </div>
-                        <div class="quote-box" style="border-left-color: #f43f5e;">
-                            <span class="quote-box-star">★{c['rating']}</span> "{c['evidence_quote']}"
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    con_html = (
+                        f'<div class="con-card">'
+                        f'<div class="con-title">'
+                        f'<span>{c["icon"]} {c["aspect_title"]}</span>'
+                        f'<span class="con-score">{c["impact_level"]}</span>'
+                        f'</div>'
+                        f'<div class="quote-box" style="border-left-color: #f43f5e;">'
+                        f'<span class="quote-box-star">★{c["rating"]}</span> "{c["evidence_quote"]}"'
+                        f'</div></div>'
+                    )
+                    st.markdown(con_html, unsafe_allow_html=True)
 
     with tab_scorecard:
         st.markdown("#### 📊 Hardware & Usability Aspect Scorecard (0 to 100)")
-        st.caption("Comparative sentiment score computed per technical domain based on customer reports.")
+        st.caption("Customer satisfaction percentage per technical domain. Only aspects with actual customer reviews are scored.")
         
         sc_col1, sc_col2 = st.columns([3, 2])
+        scored_aspects = []
         with sc_col1:
             for title, info in scorecard.items():
-                score = info["score"]
-                status = info["status"]
-                score_color = "#10b981" if score >= 70 else ("#f59e0b" if score >= 50 else "#f43f5e")
-                
-                st.markdown(f"""
-                <div class="score-row">
-                    <span><strong>{info['icon']} {title}</strong></span>
-                    <span>
-                        <span style="font-weight: 700; color: {score_color}; margin-right: 8px;">{score}/100</span>
-                        <span style="font-size: 0.78rem; color: #94a3b8;">({info['positive_count']} praise / {info['negative_count']} critical)</span>
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-                st.progress(score / 100.0)
+                if info.get("has_data"):
+                    score = info["score"]
+                    status = info["status"]
+                    score_color = "#10b981" if score >= 70 else ("#f59e0b" if score >= 50 else "#f43f5e")
+                    
+                    row_html = (
+                        f'<div class="score-row">'
+                        f'<span><strong>{info["icon"]} {title}</strong></span>'
+                        f'<span>'
+                        f'<span style="font-weight: 700; color: {score_color}; margin-right: 8px;">{score}/100</span>'
+                        f'<span style="font-size: 0.78rem; color: #94a3b8;">({info["positive_count"]} praise / {info["negative_count"]} critical)</span>'
+                        f'</span></div>'
+                    )
+                    st.markdown(row_html, unsafe_allow_html=True)
+                    st.progress(score / 100.0)
+                    scored_aspects.append({"Aspect": title, "Score": score})
+                else:
+                    unmentioned_html = (
+                        f'<div class="score-row" style="opacity: 0.65;">'
+                        f'<span><strong>{info["icon"]} {title}</strong></span>'
+                        f'<span style="font-size: 0.78rem; color: #94a3b8; background: #1e293b; padding: 3px 8px; border-radius: 4px;">'
+                        f'No Customer Feedback (0 mentions)</span></div>'
+                    )
+                    st.markdown(unmentioned_html, unsafe_allow_html=True)
 
         with sc_col2:
-            sc_data = pd.DataFrame([
-                {"Aspect": k, "Score": v["score"]} for k, v in scorecard.items()
-            ])
-            sc_chart = alt.Chart(sc_data).mark_bar(cornerRadius=4).encode(
-                x=alt.X("Score:Q", scale=alt.Scale(domain=[0, 100]), title="Health Score (0-100)"),
-                y=alt.Y("Aspect:N", sort="-x", title=""),
-                color=alt.Color("Score:Q", scale=alt.Scale(domain=[40, 70, 90], range=["#f43f5e", "#f59e0b", "#10b981"])),
-                tooltip=["Aspect", "Score"]
-            ).properties(height=240)
-            st.altair_chart(sc_chart, use_container_width=True)
+            if scored_aspects:
+                sc_data = pd.DataFrame(scored_aspects)
+                sc_chart = alt.Chart(sc_data).mark_bar(cornerRadius=4).encode(
+                    x=alt.X("Score:Q", scale=alt.Scale(domain=[0, 100]), title="Satisfaction Score (0-100)"),
+                    y=alt.Y("Aspect:N", sort="-x", title=""),
+                    color=alt.Color("Score:Q", scale=alt.Scale(domain=[30, 60, 90], range=["#f43f5e", "#f59e0b", "#10b981"])),
+                    tooltip=["Aspect", "Score"]
+                ).properties(height=220)
+                st.altair_chart(sc_chart, use_container_width=True)
+            else:
+                st.info("No hardware dimensions were specifically discussed in this review sample.")
+
+
+# ---------------------------------------------------------------------------
+# Reusable UI Component: Calculus CIE-3 Gradient Descent & Ascent Lab
+# ---------------------------------------------------------------------------
+def render_calculus_lab():
+    st.subheader("📉 Calculus CIE-3: Loss Optimization using Gradient Descent & Gradient Ascent")
+    st.caption(
+        "Interactive Multivariable Calculus Laboratory demonstrating mathematical optimization for review authenticity classification. "
+        "Formulates Binary Cross-Entropy (BCE) loss, derives analytical partial derivatives via the Chain Rule, proves strict Hessian convexity, "
+        "and demonstrates the mathematical equivalence between Gradient Descent minimization and Log-Likelihood Gradient Ascent maximization."
+    )
+
+    st.markdown(
+        "<div style='margin-bottom: 16px;'>"
+        "<span class='url-badge'>Course Component: Calculus CIE-3</span> "
+        "<span class='url-badge'>Weightage: 10 Marks (6 Report + 4 Viva)</span> "
+        "<span class='url-badge'>Submission Deadline: 1 Nov 2026, 11:55 PM</span> "
+        "<span class='url-badge' style='color: #6ee7b7;'>Convexity: Globally Optimal (H ≻ 0)</span>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # 4 Hero Metric Cards
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-card-title">Initial Loss J(θ = 0)</div>
+            <div class="stat-card-value" style="color: #60a5fa;">0.6931</div>
+            <div class="stat-card-delta">J(0) = ln(2) at maximum entropy</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-card-title">Converged Loss J(θ*)</div>
+            <div class="stat-card-value" style="color: #34d399;">0.0284</div>
+            <div class="stat-card-delta" style="color: #34d399;">95.9% empirical loss reduction</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-card-title">Hessian Convexity</div>
+            <div class="stat-card-value" style="color: #a78bfa;">∇²J ≻ 0</div>
+            <div class="stat-card-delta" style="color: #a78bfa;">Strictly positive definite (zero local minima)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-card-title">Algorithm Duality</div>
+            <div class="stat-card-value" style="color: #f59e0b;">GD ≡ GA</div>
+            <div class="stat-card-delta">Min Cost ≡ Max Log-Likelihood</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
+
+    tab_play, tab_math, tab_viva_cards, tab_report = st.tabs([
+        "⚙️ Live Optimizer Playground",
+        "📐 Mathematical Formulations & Proofs",
+        "🎓 Blackboard Viva Defense (4 Marks)",
+        "📄 CIE-3 Project Report & Softcopy"
+    ])
+
+    with tab_play:
+        st.markdown("#### 🔬 Real-Time Optimization Simulation")
+        st.caption("Adjust hyperparameters below to observe loss trajectories, learning rate stability, and learned feature weights in real time.")
+
+        p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+        with p_col1:
+            algo_choice = st.selectbox(
+                "Optimization Algorithm:",
+                [
+                    "Batch Gradient Descent (BGD)",
+                    "Mini-Batch Gradient Descent (MBGD)",
+                    "Stochastic Gradient Descent (SGD)",
+                    "Gradient Ascent (Log-Likelihood Maximization)"
+                ]
+            )
+        with p_col2:
+            lr_val = st.slider("Learning Rate (α):", min_value=0.01, max_value=0.80, value=0.15, step=0.01)
+        with p_col3:
+            epochs_val = st.slider("Epochs / Iterations:", min_value=10, max_value=120, value=50, step=5)
+        with p_col4:
+            reg_val = st.slider("L2 Penalty (λ):", min_value=0.00, max_value=0.10, value=0.01, step=0.005)
+
+        # Generate realistic dataset
+        np.random.seed(42)
+        n_samples = 400
+        n_feat = 6
+        X_gen = np.random.normal(loc=[0.02, 0.05, 0.1, 0.45, 0.2, 0.7], scale=[0.01, 0.02, 0.2, 0.1, 0.1, 0.15], size=(n_samples // 2, n_feat))
+        X_susp = np.random.normal(loc=[0.18, 0.28, 2.8, 0.25, 1.2, 0.95], scale=[0.04, 0.06, 0.6, 0.08, 0.2, 0.05], size=(n_samples // 2, n_feat))
+        X_sim = np.vstack([X_gen, X_susp])
+        y_sim = np.hstack([np.zeros(n_samples // 2), np.ones(n_samples // 2)])
+        perm = np.random.permutation(n_samples)
+        X_sim, y_sim = X_sim[perm], y_sim[perm]
+        X_sim = (X_sim - X_sim.mean(axis=0)) / (X_sim.std(axis=0) + 1e-8)
+
+        # Run selected optimizer
+        opt = GradientDescentOptimizer(learning_rate=lr_val, epochs=epochs_val, lambda_reg=reg_val, batch_size=32)
+        if "Batch Gradient Descent" in algo_choice:
+            hist = opt.fit_batch_gradient_descent(X_sim, y_sim)
+            y_title = "Cost J(θ)"
+            metric_label = "Final BCE Cost"
+            final_val = hist[-1]
+        elif "Mini-Batch" in algo_choice:
+            hist = opt.fit_mini_batch_gradient_descent(X_sim, y_sim)
+            y_title = "Cost J(θ)"
+            metric_label = "Final BCE Cost"
+            final_val = hist[-1]
+        elif "Stochastic" in algo_choice:
+            hist = opt.fit_stochastic_gradient_descent(X_sim, y_sim)
+            y_title = "Cost J(θ)"
+            metric_label = "Final BCE Cost"
+            final_val = hist[-1]
+        else:
+            hist = opt.fit_gradient_ascent(X_sim, y_sim)
+            y_title = "Log-Likelihood ℓ(θ)"
+            metric_label = "Final Log-Likelihood"
+            final_val = hist[-1]
+
+        # Trajectory Visualization
+        ch_c1, ch_c2 = st.columns([3, 2])
+        with ch_c1:
+            st.markdown(f"**Optimization Trajectory ({algo_choice}):**")
+            chart_df = pd.DataFrame({
+                "Epoch": list(range(1, len(hist) + 1)),
+                "ObjectiveValue": hist
+            })
+            chart_line = alt.Chart(chart_df).mark_line(color="#38bdf8", strokeWidth=2.5, point=True).encode(
+                x=alt.X("Epoch:Q", title="Epoch / Iteration"),
+                y=alt.Y("ObjectiveValue:Q", title=y_title, scale=alt.Scale(zero=False)),
+                tooltip=["Epoch", "ObjectiveValue"]
+            ).properties(height=280)
+            st.altair_chart(chart_line, use_container_width=True)
+
+        with ch_c2:
+            st.markdown("**Optimizer Diagnostics:**")
+            st.metric("Initial Objective Value", f"{hist[0]:.4f}")
+            st.metric(metric_label, f"{final_val:.4f}")
+            if "Ascent" in algo_choice:
+                delta_str = f"+{final_val - hist[0]:.2f} units (Maximizing)"
+                st.metric("Log-Likelihood Gain", delta_str)
+            else:
+                pct_red = ((hist[0] - final_val) / hist[0]) * 100.0
+                st.metric("Total Loss Reduction", f"{pct_red:.1f}%")
+            st.metric("Trained Bias (Intercept b)", f"{opt.b:.4f}")
+
+        # Learning Rate Sensitivity Benchmark
+        st.markdown("#### 📊 Learning Rate (α) Sensitivity Comparison")
+        st.caption("Illustrates the fundamental calculus behavior of Gradient Descent under varying step sizes α:")
+
+        lrs = [0.01, 0.05, 0.20, 0.70]
+        lr_records = []
+        for lr_item in lrs:
+            tmp_opt = GradientDescentOptimizer(learning_rate=lr_item, epochs=min(epochs_val, 60), lambda_reg=reg_val)
+            h = tmp_opt.fit_batch_gradient_descent(X_sim, y_sim)
+            for ep_idx, v in enumerate(h):
+                lr_records.append({"Epoch": ep_idx + 1, "Cost": v, "Learning Rate": f"α = {lr_item}"})
+
+        lr_comp_df = pd.DataFrame(lr_records)
+        lr_comp_chart = alt.Chart(lr_comp_df).mark_line(strokeWidth=2).encode(
+            x=alt.X("Epoch:Q", title="Epoch"),
+            y=alt.Y("Cost:Q", title="Cost J(θ)", scale=alt.Scale(zero=False)),
+            color=alt.Color("Learning Rate:N", scale=alt.Scale(range=["#f59e0b", "#3b82f6", "#10b981", "#ef4444"])),
+            tooltip=["Epoch", "Learning Rate", "Cost"]
+        ).properties(height=260)
+        st.altair_chart(lr_comp_chart, use_container_width=True)
+
+        # Learned Weights Interpretation Table
+        st.markdown("#### ⚖️ Learned Weight Vector (θ) & Physical Interpretations")
+        weight_rows = []
+        interpretations = [
+            ("Exclamation Density (x₁)", opt.w[0], "Positive (+): High exclamation marks correlate strongly with promotional fabrication."),
+            ("Uppercase Caps Ratio (x₂)", opt.w[1], "Positive (+): Aggressive capitalization indicates promotional spam."),
+            ("Superlative Frequency (x₃)", opt.w[2], "Positive (+): Extreme praise buzzwords ('perfect', 'flawless') signify deceptive inflation."),
+            ("Review Word Count (x₄)", opt.w[3], "Negative (-): Genuine buyers write longer, detailed functional descriptions."),
+            ("Rating Deviation (x₅)", opt.w[4], "Positive (+): Severe divergence from the store baseline signals review brigading."),
+            ("Sentiment Polarity (x₆)", opt.w[5], "Positive (+): Artificially euphoric positive tone flags incentivized campaigns.")
+        ]
+        for name, weight, interp in interpretations:
+            weight_rows.append({"Feature": name, "Calculated Weight (w_j)": f"{weight:+.4f}", "Calculus Interpretation": interp})
+        st.dataframe(pd.DataFrame(weight_rows), use_container_width=True, hide_index=True)
+
+    with tab_math:
+        st.markdown("### 📐 Complete Mathematical Formulations & Derivations")
+        st.caption("Full rigorous calculus derivations required for the CIE-3 Project Report (Part 1).")
+
+        with st.expander("1. Sigmoid Hypothesis Function & Derivative Derivation", expanded=True):
+            st.markdown(r"""
+**Activation Function:**
+$$\sigma(z) = \frac{1}{1 + e^{-z}} = (1 + e^{-z})^{-1}$$
+
+**Derivative Derivation using Power and Chain Rules:**
+$$\frac{d}{dz}\sigma(z) = -1 \cdot (1 + e^{-z})^{-2} \cdot \frac{d}{dz}(1 + e^{-z})$$
+$$= -(1 + e^{-z})^{-2} \cdot (-e^{-z}) = \frac{e^{-z}}{(1 + e^{-z})^2}$$
+$$= \frac{1}{1 + e^{-z}} \cdot \frac{e^{-z}}{1 + e^{-z}} = \frac{1}{1 + e^{-z}} \left( 1 - \frac{1}{1 + e^{-z}} \right)$$
+
+$$\therefore \frac{d}{dz}\sigma(z) = \sigma(z)(1 - \sigma(z))$$
+
+*Significance:* The derivative evaluates directly from the forward activation without recomputing exponentials, drastically accelerating gradient descent updates.
+""")
+
+        with st.expander("2. Binary Cross-Entropy Cost Function & Chain Rule Gradient Derivation", expanded=True):
+            st.markdown(r"""
+**Cost Function with $L_2$ Regularization:**
+$$J(\mathbf{w}, b) = -\frac{1}{m} \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right] + \frac{\lambda}{2m} \|\mathbf{w}\|^2$$
+
+where $z^{(i)} = \mathbf{w}^T \mathbf{x}^{(i)} + b$ and $h^{(i)} = \sigma(z^{(i)})$.
+
+**Multivariate Chain Rule Application:**
+For each sample $i$, let $L^{(i)} = -\left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right]$.
+$$\frac{\partial L^{(i)}}{\partial w_j} = \frac{\partial L^{(i)}}{\partial h^{(i)}} \cdot \frac{\partial h^{(i)}}{\partial z^{(i)}} \cdot \frac{\partial z^{(i)}}{\partial w_j}$$
+
+1. First factor:
+$$\frac{\partial L^{(i)}}{\partial h^{(i)}} = -\left[ \frac{y^{(i)}}{h^{(i)}} - \frac{1 - y^{(i)}}{1 - h^{(i)}} \right] = \frac{h^{(i)} - y^{(i)}}{h^{(i)}(1 - h^{(i)})}$$
+
+2. Second factor (Sigmoid derivative):
+$$\frac{\partial h^{(i)}}{\partial z^{(i)}} = h^{(i)}(1 - h^{(i)})$$
+
+3. Third factor:
+$$\frac{\partial z^{(i)}}{\partial w_j} = x_j^{(i)}$$
+
+Multiplying together, the intermediate denominator cancels out completely:
+$$\frac{\partial L^{(i)}}{\partial w_j} = \left[ \frac{h^{(i)} - y^{(i)}}{h^{(i)}(1 - h^{(i)})} \right] \cdot \left[ h^{(i)}(1 - h^{(i)}) \right] \cdot x_j^{(i)} = (h^{(i)} - y^{(i)}) x_j^{(i)}$$
+
+Adding the regularizer gradient $\frac{\partial}{\partial w_j}\left( \frac{\lambda}{2m} \sum_k w_k^2 \right) = \frac{\lambda}{m} w_j$:
+$$\therefore \frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)}) x_j^{(i)} + \frac{\lambda}{m} w_j$$
+$$\therefore \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)})$$
+""")
+
+        with st.expander("3. Mathematical Equivalence: Gradient Descent vs. Gradient Ascent", expanded=True):
+            st.markdown(r"""
+**Likelihood vs. Cost Duality:**
+Under Bernoulli independent observations, the likelihood function is:
+$$L(\mathbf{w}, b) = \prod_{i=1}^m (h^{(i)})^{y^{(i)}} (1 - h^{(i)})^{1 - y^{(i)}}$$
+
+Taking the natural logarithm:
+$$\ell(\mathbf{w}, b) = \ln L(\mathbf{w}, b) = \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right]$$
+
+Observe the exact algebraic relationship with Cost $J(\theta)$ (unregularized):
+$$\ell(\theta) = -m \cdot J(\theta) \iff J(\theta) = -\frac{1}{m} \ell(\theta)$$
+
+Taking gradients:
+$$\nabla \ell(\theta) = -m \nabla J(\theta)$$
+
+- **Gradient Ascent (Maximizing $\ell(\theta)$):**
+$$\theta^{(t+1)} = \theta^{(t)} + \eta \nabla \ell(\theta) = \theta^{(t)} - \eta m \nabla J(\theta)$$
+
+Choosing step size $\eta = \frac{\alpha}{m}$:
+$$\theta^{(t+1)} = \theta^{(t)} - \alpha \nabla J(\theta)$$
+
+- **Gradient Descent (Minimizing $J(\theta)$):**
+$$\theta^{(t+1)} = \theta^{(t)} - \alpha \nabla J(\theta)$$
+
+$$\therefore \text{Gradient Ascent on } \ell(\theta) \equiv \text{Gradient Descent on } J(\theta) \quad \blacksquare$$
+""")
+
+        with st.expander("4. Hessian Matrix & Strict Convexity Proof (No Local Minima)", expanded=True):
+            st.markdown(r"""
+**Second Partial Derivatives:**
+Differentiating $\frac{\partial J}{\partial w_j} = \frac{1}{m}\sum_{i=1}^m (h^{(i)} - y^{(i)})x_j^{(i)} + \frac{\lambda}{m}w_j$ with respect to $w_k$:
+$$\frac{\partial^2 J}{\partial w_j \partial w_k} = \frac{1}{m} \sum_{i=1}^m \frac{\partial h^{(i)}}{\partial w_k} x_j^{(i)} + \frac{\lambda}{m} \delta_{jk} = \frac{1}{m} \sum_{i=1}^m h^{(i)}(1 - h^{(i)}) x_j^{(i)} x_k^{(i)} + \frac{\lambda}{m} \delta_{jk}$$
+
+**Matrix Form:**
+$$\mathbf{H} = \frac{1}{m} \mathbf{X}^T \mathbf{D} \mathbf{X} + \frac{\lambda}{m} \mathbf{I}$$
+where $\mathbf{D} = \text{diag}\left( h^{(i)}(1 - h^{(i)}) \right)$. Since $h^{(i)} \in (0, 1)$, all diagonal entries $D_{ii} > 0$.
+
+**Positive Definiteness Proof:**
+For any non-zero vector $\mathbf{v} \in \mathbb{R}^n \setminus \{\mathbf{0}\}$:
+$$\mathbf{v}^T \mathbf{H} \mathbf{v} = \frac{1}{m} \mathbf{v}^T \mathbf{X}^T \mathbf{D} \mathbf{X} \mathbf{v} + \frac{\lambda}{m} \mathbf{v}^T \mathbf{I} \mathbf{v} = \frac{1}{m} \|\mathbf{D}^{1/2} \mathbf{X} \mathbf{v}\|_2^2 + \frac{\lambda}{m} \|\mathbf{v}\|_2^2 > 0$$
+
+Since $\mathbf{v}^T \mathbf{H} \mathbf{v} > 0$ for all $\mathbf{v} \neq \mathbf{0}$, the Hessian is **strictly positive definite** ($\mathbf{H} \succ 0$).
+
+$$\therefore J(\mathbf{w}, b) \text{ is strictly convex. A unique global minimum exists with zero local minima.} \quad \blacksquare$$
+""")
+
+    with tab_viva_cards:
+        st.markdown("### 🎓 Blackboard Viva Defense Preparation (4 Marks)")
+        st.caption("Examiner viva walkthrough: The evaluator may ask you to derive equations or explain calculus concepts on the blackboard.")
+
+        with st.expander("Q1. 'Work out the derivative of the Sigmoid function on the board.'", expanded=True):
+            st.markdown("""
+**Board Walkthrough (3 Quick Steps):**
+1. **Write:** $f(z) = \\frac{1}{1 + e^{-z}} = (1 + e^{-z})^{-1}$
+2. **Apply Power & Chain Rule:** $f'(z) = -1(1 + e^{-z})^{-2} \\cdot (-e^{-z}) = \\frac{e^{-z}}{(1 + e^{-z})^2}$
+3. **Split numerator:** $\\frac{1}{1 + e^{-z}} \\cdot \\frac{e^{-z}}{1 + e^{-z}} = f(z) \\cdot \\left(\\frac{1 + e^{-z} - 1}{1 + e^{-z}}\\right) = f(z)(1 - f(z))$
+4. **State conclusion:** "The derivative is expressed purely as a function of its own output, which is computationally optimal."
+""")
+
+        with st.expander("Q2. 'Show how the $(h - y)$ error term appears using the Chain Rule.'", expanded=True):
+            st.markdown("""
+**Board Walkthrough:**
+1. State the 3 Chain Rule components: $\\frac{\\partial J}{\\partial w_j} = \\frac{\\partial J}{\\partial h} \\cdot \\frac{\\partial h}{\\partial z} \\cdot \\frac{\\partial z}{\\partial w_j}$
+2. Differentiate $J$: $\\frac{\\partial J}{\\partial h} = -\\frac{y}{h} + \\frac{1 - y}{1 - h} = \\frac{h - y}{h(1 - h)}$
+3. Differentiate activation: $\\frac{\\partial h}{\\partial z} = h(1 - h)$
+4. Multiply: $\\left(\\frac{h - y}{h(1-h)}\\right) \\cdot h(1 - h) \\cdot x_j = (h - y)x_j$
+5. State conclusion: "The term $h(1-h)$ in the denominator cancels the Sigmoid derivative exactly, leaving the intuitive linear error $(h - y)x_j$."
+""")
+
+        with st.expander("Q3. 'Why does Gradient Descent not get trapped in local minima here?'", expanded=True):
+            st.markdown("""
+**Board Walkthrough:**
+1. Write the Hessian definition: $H_{jk} = \\frac{\\partial^2 J}{\\partial w_j \\partial w_k} = \\frac{1}{m} X^T D X + \\frac{\\lambda}{m} I$
+2. Show that $D_{ii} = h^{(i)}(1 - h^{(i)}) > 0$ for all $z \\in \\mathbb{R}$ because $0 < \\sigma(z) < 1$.
+3. Evaluate the quadratic form: $v^T H v = \\frac{1}{m} \\|D^{1/2} X v\\|^2 + \\frac{\\lambda}{m}\\|v\\|^2 > 0$ for any non-zero vector $v$.
+4. Conclude: "Because the Hessian is strictly positive definite everywhere in parameter space, the cost surface is strictly convex (a single bowl). Hence, every stationary point $\\nabla J = 0$ is guaranteed to be the unique global minimum."
+""")
+
+        with st.expander("Q4. 'Compare Batch GD vs. Stochastic GD vs. Mini-Batch GD.'", expanded=True):
+            st.markdown("""
+| Feature | Batch GD (BGD) | Stochastic GD (SGD) | Mini-Batch GD (MBGD) |
+|---|---|---|---|
+| **Gradient Sample** | Full dataset ($m$ samples) | Single sample ($m = 1$) | Mini-batch ($B = 32$ to $64$) |
+| **Convergence Path** | Deterministic, smooth straight path | High variance, noisy zig-zag | Balanced, moderate variance |
+| **Vectorization** | High (SIMD / BLAS) | Poor (sequential loop overhead) | Optimal (GPU / BLAS parallel) |
+| **Memory Requirement**| Large (stores all $m$ rows in RAM) | Minimal ($O(1)$ RAM) | Compact ($O(B)$ RAM) |
+| **Saddle Point Escape**| Can stall at flat saddles | Random noise helps escape saddles | Noise helps escape saddles |
+""")
+
+    with tab_report:
+        st.markdown("### 📄 Calculus CIE-3 Project Report & Softcopy")
+        st.caption("Official university project report fulfilling all CIE-3 requirements (Problem Description, Mathematical Formulation, Code, Results & Discussion).")
+
+        if CIE3_REPORT_PATH.exists():
+            with open(CIE3_REPORT_PATH, "r", encoding="utf-8") as f:
+                report_content = f.read()
+
+            st.download_button(
+                label="📥 Download Complete CIE-3 Project Report (Markdown / Softcopy)",
+                data=report_content,
+                file_name="CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md",
+                mime="text/markdown",
+                type="primary"
+            )
+
+            st.markdown("#### Report Document Sections:")
+            st.markdown("""
+1. **Title & Student Credentials:** Project Name, Course Title, Roll No, Branch, Submission Deadline (1 Nov 2026).
+2. **Section 1: Real-World Problem Description:** E-Commerce deception detection, star rating distortion, and mathematical formulation.
+3. **Section 2: Comprehensive Mathematical Formulation:** Sigmoid activation, BCE cost with L2 regularizer, multivariable partial derivatives, GD vs GA equivalence proof, Hessian positive-definiteness proof.
+4. **Section 3: Complete Python Optimizer Implementation:** Pure NumPy class implementation (`GradientDescentOptimizer`) with BGD, SGD, MBGD, and GA.
+5. **Section 4: Empirical Results & Sensitivity Analysis:** Initial loss $J(0) = 0.69315 \\to 0.02843$ (95.9% reduction), learning rate stability table ($\\alpha \\in \\{0.01, 0.05, 0.20, 1.00\\}$).
+6. **Section 5: Blackboard Viva Preparation (4 Marks):** 4 step-by-step whiteboard derivations for the viva examiner.
+""")
+
+            with st.expander("📖 Preview Full CIE-3 Report Softcopy (Click to Expand)"):
+                st.markdown(report_content)
+        else:
+            st.error("Report file not found. Ensure `CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md` is in the project root.")
 
 
 # ---------------------------------------------------------------------------
@@ -481,7 +838,8 @@ nav_choice = st.sidebar.radio(
         "🔍 Deep-Dive Forensic Report",
         "🏬 Electronics Storefront & Catalog",
         "⚡ Single Review Instant Scanner",
-        "📊 AI Model Studio & Viva Lab"
+        "📊 AI Model Studio & Viva Lab",
+        "📉 Calculus & Optimization Lab (CIE-3)"
     ]
 )
 
@@ -1021,7 +1379,7 @@ elif nav_choice == "📊 AI Model Studio & Viva Lab":
     st.subheader("📊 AI Model Studio, Benchmark Evaluation & Viva Defense")
     st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, predictive linguistic tokens, and viva examiner questions.")
 
-    tab_eval, tab_words, tab_viva = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "🎓 Project Viva & Defense Guide"])
+    tab_eval, tab_words, tab_viva, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "🎓 Project Viva & Defense Guide", "📉 Calculus Optimization Lab (CIE-3)"])
 
     with tab_eval:
         st.markdown(f"**Selected Best Model:** `{metrics.get('best_model', 'Logistic Regression (Balanced TF-IDF)')}`")
@@ -1108,6 +1466,16 @@ elif nav_choice == "📊 AI Model Studio & Viva Lab":
         for q, a in vivas:
             with st.expander(q):
                 st.markdown(a)
+
+    with tab_calc:
+        render_calculus_lab()
+
+
+# ---------------------------------------------------------------------------
+# Mode 7: 📉 Calculus & Optimization Lab (CIE-3)
+# ---------------------------------------------------------------------------
+elif nav_choice == "📉 Calculus & Optimization Lab (CIE-3)":
+    render_calculus_lab()
 
 st.divider()
 st.caption("🛡️ TrustRate AI — Machine Learning for E-Commerce Transparency and Consumer Protection.")

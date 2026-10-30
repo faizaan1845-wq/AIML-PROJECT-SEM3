@@ -34,6 +34,13 @@
    - Test confusion matrix and top predictive linguistic tokens.
    - Comprehensive viva examination defense questions and technical answers.
 
+7. **📉 Calculus CIE-3: Multivariable Optimization Suite (Gradient Descent & Gradient Ascent):**
+   - **Mathematical Formulation:** Rigorous derivation of Binary Cross-Entropy loss gradients $\nabla J(\mathbf{w}, b)$ using the Calculus Chain Rule.
+   - **Convexity Proof:** Hessian matrix formulation $\mathbf{H} = \frac{1}{m}\mathbf{X}^T\mathbf{D}\mathbf{X} + \frac{\lambda}{m}\mathbf{I} \succ 0$, mathematically proving zero local minima traps.
+   - **GD vs. GA Equivalence:** Formal algebraic proof showing Gradient Ascent on Log-Likelihood $\ell(\theta)$ is identical to Gradient Descent on Cost $J(\theta)$.
+   - **Interactive Streamlit Lab:** Live parameter controls ($\alpha$, epochs, $\lambda$) comparing Batch GD, Mini-Batch GD, and Stochastic GD, with real-time Altair loss trajectories.
+   - **Complete University Report & Viva Guide:** Pre-formatted academic documentation in [`CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md`](CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md) tailored for the 10-mark CIE-3 requirement.
+
 ---
 
 ## 🚀 Quickstart Guide
@@ -77,19 +84,21 @@ Models evaluated on held-out test split with Word (1-2) + Character (3-5) Sublin
 
 ```
 TrustRate_AI/
-├── app.py                         # Streamlit forensic dashboard & analytics UI
-├── aspect_analyzer.py             # Product failure root-cause & pros/cons extraction engine
-├── train_model.py                 # Multi-model benchmarking and training pipeline
-├── prepare_data.py                # Dataset curation and electronics indexing script
-├── model_utils.py                 # Core inference, rating deflator, and forensic utilities
-├── scraper.py                     # Amazon URL parser & 2,990+ ASIN review matcher
-├── model.joblib                   # Best trained pipeline (Word + Char TF-IDF + Classifier)
-├── metrics.json                   # Full evaluation results and confusion matrix
-├── requirements.txt               # Dependencies
-├── README.md                      # Quickstart documentation
-├── PROJECT_REPORT_AND_VIVA.md     # Full technical report and viva Q&A
+├── app.py                              # Streamlit forensic dashboard & analytics UI
+├── aspect_analyzer.py                  # Product failure root-cause & pros/cons extraction engine
+├── gradient_descent_optimizer.py       # Calculus CIE-3 optimizer (BGD, SGD, MBGD, Gradient Ascent)
+├── train_model.py                      # Multi-model benchmarking and training pipeline
+├── prepare_data.py                     # Dataset curation and electronics indexing script
+├── model_utils.py                      # Core inference, rating deflator, and forensic utilities
+├── scraper.py                          # Amazon URL parser & 2,990+ ASIN review matcher
+├── model.joblib                        # Best trained pipeline (Word + Char TF-IDF + Classifier)
+├── metrics.json                        # Full evaluation results and confusion matrix
+├── requirements.txt                    # Dependencies
+├── README.md                           # Quickstart documentation
+├── PROJECT_REPORT_AND_VIVA.md          # Full AIML project report and viva Q&A
+├── CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md # Calculus CIE-3 Project Report (10 Marks)
 └── data/
-    ├── curated_training_dataset.csv # 4,398 curated balanced training reviews
-    ├── electronics_catalog.json     # 311 indexed electronics products
-    └── asin_database.json           # 2,993 real Amazon products & 43,300+ reviews
+    ├── curated_training_dataset.csv    # 4,398 curated balanced training reviews
+    ├── electronics_catalog.json        # 311 indexed electronics products
+    └── asin_database.json              # 2,993 real Amazon products & 43,300+ reviews
 ```

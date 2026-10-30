@@ -4,8 +4,8 @@ TrustRate AI — Product Failure Root Cause & Aspect-Based Pros/Cons Diagnostic 
 
 Extracts:
 1. Why a certain product fails (Root Cause Diagnostics, engineering failure modes, incidence rate, severity)
-2. Direct customer evidence quote snippets supporting each failure mode
-3. Authentic Pros (genuine verified praise) vs Authentic Cons (real customer limitations & compromises)
+2. Direct customer evidence quote snippets supporting each failure mode (clause-level targeted extraction)
+3. Authentic Pros (genuine verified praise only) vs Authentic Cons (real customer limitations & compromises)
 4. Comprehensive Aspect Scorecard across hardware dimensions: Battery, Build Quality, Connectivity, Audio, Ergonomics
 """
 
@@ -15,7 +15,7 @@ import pandas as pd
 
 
 # ---------------------------------------------------------------------------
-# Aspect & Failure Taxonomy
+# Aspect & Failure Taxonomy with Customer-Friendly Explanations
 # ---------------------------------------------------------------------------
 
 ASPECT_DEFINITIONS = {
@@ -26,12 +26,12 @@ ASPECT_DEFINITIONS = {
             "battery", "charge", "charges", "charging", "charger", "overheat", "overheats", "overheating",
             "hot", "warm", "drain", "draining", "drains", "cord", "cable", "plug",
             "adapter", "power", "mah", "usb-c", "lightning", "pins", "pin", "watt", "watts",
-            "standby", "recharge", "runtime", "overheats dangerously", "coil whine", "electric", "short circuit"
+            "standby", "recharge", "runtime", "coil whine", "electric", "short circuit"
         ],
         "failure_patterns": [
             r"\b(stopped|wont|won't|doesn't|failed to|not)\s+(charge|charging|hold a charge)\b",
             r"\b(battery|power)\s+(drains|drain|died|dies|dead|terrible|awful|horrible|poor|bad|short)\b",
-            r"\b(overheat|overheats|overheating|gets\s+(very|super|dangerously)\s+hot)\b",
+            r"\b(overheat|overheats|overheating|gets\s+(very|super|dangerously|noticeably)\s+(hot|warm))\b",
             r"\b(short|less than)\s+(\d+\s*(hours?|hrs?|mins?))\s+battery\b",
             r"\b(pins?|cable|plug|wire)\s+(bent|melted|loose|burned|snapped|frayed|tore)\b",
             r"\b(swollen|swelled|spark|smoke|fire\s+hazard|humming noise)\b",
@@ -42,12 +42,8 @@ ASPECT_DEFINITIONS = {
             r"\b(fast|quick|rapid)\s+(charging|charge)\b",
             r"\b(good|excellent|solid|impressive)\s+battery\s+life\b"
         ],
-        "root_causes": {
-            "overheating": "High thermal dissipation and lack of adequate heat dissipation circuitry, causing safety throttling or casing melting.",
-            "charging_failure": "Pin connector wear, solder degradation on the USB port, or poor controller handshake causing charging refusal.",
-            "rapid_drain": "High background power leakage, sub-par lithium cell capacity degradation within 2-4 weeks of usage.",
-            "cable_defect": "Thin gauge wiring and inadequate strain relief leading to internal wire breakage at the connector junction."
-        }
+        "customer_plain_cause": "The device tends to heat up uncomfortably during charging or high use, and the battery depletes faster than expected.",
+        "con_title": "Battery Drain & Charging Heat"
     },
     "build": {
         "title": "Hardware Build & Durability",
@@ -55,26 +51,23 @@ ASPECT_DEFINITIONS = {
         "keywords": [
             "broke", "broken", "crack", "cracked", "cracking", "fragile", "flimsy",
             "plastic", "snap", "snapped", "fell apart", "fall apart",
-            "hinge", "durability", "durable", "casing", "screws",
-            "scratches", "scratched", "sturdy", "build quality", "finish", "tore", "cracking"
+            "hinge", "crease", "durability", "durable", "casing", "screws",
+            "scratches", "scratched", "sturdy", "build quality", "finish", "tore", "bubbling", "protector"
         ],
         "failure_patterns": [
-            r"\b(broke|cracked|snapped|fell apart|shattered|tore)\s+(after|within|in)\s+(\d+\s*(days?|weeks?|months?|uses?))\b",
+            r"\b(broke|cracked|snapped|fell apart|shattered|tore|bubbling)\s+(after|within|in|along)\s+(\d+\s*(days?|weeks?|months?|uses?)|the crease)\b",
             r"\b(cheap|flimsy|fragile|poor)\s+(plastic|material|build|construction|quality|casing|wire)\b",
-            r"\b(hinge|joint|clip|bracket|latch)\s+(broke|snapped|loose|wobbly|cracked)\b",
+            r"\b(hinge|joint|clip|bracket|latch|crease)\s+(broke|snapped|loose|wobbly|cracked|noticeable|crease)\b",
             r"\b(scratches?|dents?)\s+(very\s+easily|immediately|out of the box)\b",
-            r"\b(pins? bent|casing cracked|wire tore)\b"
+            r"\b(pins? bent|casing cracked|wire tore|protector started bubbling)\b"
         ],
         "positive_patterns": [
             r"\b(solid|premium|sturdy|durable|well-built|well built|robust)\s+(build|feel|material|construction)\b",
             r"\b(metal|aluminum)\s+(casing|frame|finish)\b",
             r"\b(survived|dropped\s+and\s+still\s+works)\b"
         ],
-        "root_causes": {
-            "brittle_materials": "Use of low-grade brittle polymers without glass-fiber reinforcement, vulnerable to stress micro-fractures.",
-            "premature_failure": "Lack of mechanical stress testing on hinges, joints, and connector junction strain collars.",
-            "poor_tolerances": "Inconsistent injection molding tolerances resulting in creaking, loose panel gaps, and bent pin contacts."
-        }
+        "customer_plain_cause": "Materials or moving parts (like hinges or screen protectors) show wear, cracking, or creaking with daily handling.",
+        "con_title": "Build Durability & Material Wear"
     },
     "connectivity": {
         "title": "Wireless Connectivity & Bluetooth",
@@ -97,11 +90,8 @@ ASPECT_DEFINITIONS = {
             r"\b(stable|reliable|strong|flawless)\s+(connection|bluetooth|range)\b",
             r"\b(zero|no)\s+(lag|latency|delay)\b"
         ],
-        "root_causes": {
-            "signal_dropout": "Sub-optimal internal antenna placement and weak RF shielding susceptible to 2.4 GHz WiFi interference.",
-            "pairing_desync": "Firmware handshake timeouts between true-wireless master/slave units causing one side to drop.",
-            "latency_issues": "Omission of modern low-latency Bluetooth codecs (aptX LL, AAC), producing perceptible audio-video delay."
-        }
+        "customer_plain_cause": "Frequent Bluetooth dropouts, pairing delays, or limited wireless range.",
+        "con_title": "Wireless & Bluetooth Disconnections"
     },
     "audio": {
         "title": "Audio, Acoustic & Mic Performance",
@@ -125,86 +115,105 @@ ASPECT_DEFINITIONS = {
             r"\b(great|excellent|superb|fantastic)\s+(sound|audio|acoustic)\s+quality\b",
             r"\b(clear|clean)\s+(microphone|mic|call quality)\b"
         ],
-        "root_causes": {
-            "driver_distortion": "Undersized dynamic drivers with thin diaphragms that break up under high excursion, causing audible harmonic distortion.",
-            "analog_hiss": "Inadequate digital-to-analog converter (DAC) grounding producing continuous ground-loop static and hiss.",
-            "poor_mic_dsp": "Absence of dual-microphone noise cancellation arrays, causing ambient wind and background clatter to overpower vocal pickup."
-        }
+        "customer_plain_cause": "Sound quality becomes muffled or distorted at louder volumes, and microphone picks up too much background noise.",
+        "con_title": "Audio Quality & Microphone Clarity"
     },
     "ergonomics": {
-        "title": "Ergonomics, Comfort & Fit",
-        "icon": "👂",
+        "title": "Size, Weight & Handling Comfort",
+        "icon": "⚖️",
         "keywords": [
             "comfort", "comfortable", "uncomfortable", "fit", "fits", "fitting",
             "pain", "hurts", "hurting", "sore", "soreness", "ear tips", "tips",
-            "tight", "loose", "heavy", "headband", "slips", "slipping",
-            "falls out", "falling out", "cushion", "cushions", "padding"
+            "tight", "loose", "heavy", "bulky", "pocket", "narrow", "outer screen",
+            "slips", "slipping", "falls out", "falling out", "cushion", "cushions", "padding"
         ],
         "failure_patterns": [
-            r"\b(hurts?|painful|sore|aches?)\s+(my\s+ears?|head|after\s+\d+)\b",
-            r"\b(uncomfortable|awkward|terrible)\s+(to wear|fit|design)\b",
+            r"\b(hurts?|painful|sore|aches?)\s+(my\s+ears?|head|hands?|fingers?)\b",
+            r"\b(uncomfortable|awkward|terrible)\s+(to wear|fit|hold|use|type)\b",
             r"\b(keeps?|constantly)\s+(falling|slipping|dropping)\s+out\b",
-            r"\b(too\s+(tight|heavy|bulky|large|small|loose))\b",
+            r"\b(too\s+(tight|heavy|bulky|large|narrow|small|loose))\b",
+            r"\b(heavy in the pocket|narrow for typing)\b",
             r"\b(ear\s*tips?|cushions?)\s+(fall off|irritate|scratchy|stiff)\b"
         ],
         "positive_patterns": [
             r"\b(very|super|extremely)\s+comfortable\b",
-            r"\b(comfortable|great|perfect|snug|secure)\s+fit\b",
-            r"\b(lightweight|light\s+weight|hardly\s+notice|forget\s+wearing)\b"
+            r"\b(comfortable|great|perfect|snug|secure)\s+(fit|grip|in hand)\b",
+            r"\b(lightweight|light\s+weight|hardly\s+notice|forget\s+wearing|easy to hold)\b"
         ],
-        "root_causes": {
-            "high_clamping_force": "Excessive spring tension in the headband or oversized nozzle diameter causing cartilage pressure pain within 45 minutes.",
-            "slipping_fit": "Smooth medical-grade silicone tips without ergonomic concha fins, losing friction lock during jaw movement or jogging."
-        }
+        "customer_plain_cause": "Can feel bulky, heavy in the pocket, or tiring to hold and use for extended periods.",
+        "con_title": "Size, Weight & Handling Discomfort"
     },
     "software": {
-        "title": "Software, Controls & Compatibility",
+        "title": "Software, Controls & Stability",
         "icon": "📱",
         "keywords": [
             "app", "software", "controls", "touch", "button", "buttons",
             "firmware", "update", "updates", "compatible", "compatibility",
             "ios", "android", "windows", "mac", "driver", "drivers",
-            "glitch", "bug", "crash", "crashes"
+            "glitch", "bug", "crash", "crashes", "freezing", "lag"
         ],
         "failure_patterns": [
-            r"\b(app|software)\s+(crashes|glitches|useless|terrible|broken|doesn't work)\b",
+            r"\b(app|software|update)\s+(crashes|glitches|useless|terrible|broken|doesn't work|caused occasional freezing)\b",
             r"\b(touch\s+controls?|buttons?)\s+(unresponsive|too sensitive|accidental|don't work)\b",
             r"\b(firmware\s+update)\s+(bricked|broke|ruined)\b",
-            r"\b(not|incompatible|fails)\s+with\s+(iphone|android|windows|mac)\b"
+            r"\b(freezing|frozen|laggy|stutter)\b"
         ],
         "positive_patterns": [
-            r"\b(intuitive|responsive|easy)\s+(controls|app|buttons|setup)\b",
-            r"\b(app\s+has\s+(great|useful|good)\s+features|eq\s+customization)\b"
+            r"\b(intuitive|responsive|easy|smooth)\s+(controls|app|buttons|setup|ui)\b",
+            r"\b(app\s+has\s+(great|useful|good)\s+features|ai\s+features|multitasking)\b"
         ],
-        "root_causes": {
-            "capacitive_touch_mishits": "Overly sensitive capacitive surface area triggering accidental pause/skips when adjusting position in ear.",
-            "unstable_companion_app": "Poorly maintained mobile companion app lacking BLE sync retry logic, causing frequent freezing."
-        }
+        "customer_plain_cause": "Occasional software lag, freezing after updates, or finicky touch/button controls.",
+        "con_title": "Software Glitches & Response Lag"
     }
 }
 
 
-def _clean_quote(text: str, target_keywords: Optional[List[str]] = None, max_words: int = 28) -> str:
-    """Extracts a succinct sentence mentioning the target aspect keywords."""
+def _extract_targeted_clause(text: str, target_keywords: List[str], max_words: int = 26, is_negative_context: bool = False) -> str:
+    """
+    Extracts the specific sentence or sub-clause that directly discusses the target aspect keywords,
+    avoiding repeating the entire review across different aspect categories.
+    """
     t = str(text).strip().replace("\n", " ")
     t = re.sub(r"\s+", " ", t)
-    sentences = re.split(r"(?<=[.!?])\s+", t)
-    
-    if target_keywords:
-        for s in sentences:
-            s_low = s.lower()
-            if any(re.search(r"\b" + re.escape(kw) + r"\b", s_low) for kw in target_keywords):
-                s_clean = s.strip()
-                if 4 <= len(s_clean.split()) <= max_words:
-                    return s_clean
-                elif len(s_clean.split()) > max_words:
-                    return " ".join(s_clean.split()[:max_words]) + "..."
 
+    # First attempt: break by punctuation and conjunction clauses (, but / and / however / ; / .)
+    clauses = re.split(r"(?<=[.!?;])\s+|\s+(?:but|however|although|whereas)\s+", t, flags=re.IGNORECASE)
+
+    negative_cue_words = {"broke", "broken", "crease", "bubbling", "warm", "hot", "slow", "heavy", "drain", "draining", "lag", "glitch", "disconnect", "narrow", "flimsy", "cheap"}
+
+    candidates = []
+    for c in clauses:
+        c_low = c.lower()
+        if any(re.search(r"\b" + re.escape(kw) + r"\b", c_low) for kw in target_keywords):
+            clean_c = c.strip()
+            clean_c = re.sub(r"^(but|and|or|however|so)\s+", "", clean_c, flags=re.IGNORECASE).strip()
+            words = clean_c.split()
+            if 3 <= len(words) <= max_words:
+                has_neg = any(nw in c_low for nw in negative_cue_words)
+                candidates.append((has_neg, clean_c))
+            elif len(words) > max_words:
+                truncated = " ".join(words[:max_words]) + "..."
+                has_neg = any(nw in c_low for nw in negative_cue_words)
+                candidates.append((has_neg, truncated))
+
+    if candidates:
+        if is_negative_context:
+            # Sort so candidates with negative cue words come first
+            candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+
+    # Fallback to standard sentence splitting
+    sentences = re.split(r"(?<=[.!?])\s+", t)
     for s in sentences:
-        s_clean = s.strip()
-        if 4 <= len(s_clean.split()) <= max_words:
-            return s_clean
-            
+        s_low = s.lower()
+        if any(re.search(r"\b" + re.escape(kw) + r"\b", s_low) for kw in target_keywords):
+            words = s.split()
+            if 3 <= len(words) <= max_words:
+                return s.strip()
+            elif len(words) > max_words:
+                return " ".join(words[:max_words]) + "..."
+
+    # General fallback
     words = t.split()
     if len(words) > max_words:
         return " ".join(words[:max_words]) + "..."
@@ -213,15 +222,14 @@ def _clean_quote(text: str, target_keywords: Optional[List[str]] = None, max_wor
 
 def extract_aspect_sentiment_and_failures(
     reviews: Any,
-    min_evidence_per_mode: int = 2
+    min_evidence_per_mode: int = 1
 ) -> Dict[str, Any]:
     """
-    Core diagnostic pipeline that scans actual customer reviews and extracts:
-    1. Primary Product Failure Reasons with incidence rate & root cause
-    2. Real Customer Evidence quotes for every failure
-    3. Authentic Pros (genuine verified praise)
-    4. Authentic Cons (real customer trade-offs & limitations)
-    5. Quantitative Aspect Scorecard
+    Core diagnostic pipeline:
+    1. Diagnoses why a product fails in plain, human-friendly terms.
+    2. Extracts targeted, non-repetitive customer review evidence quotes.
+    3. Separates genuine pros (from organic reviews only, no promotional spam) from authentic cons.
+    4. Computes an honest Aspect Scorecard (showing 'No Customer Feedback' instead of fake 70/100).
     """
     if isinstance(reviews, pd.DataFrame):
         rev_list = reviews.to_dict(orient="records")
@@ -253,12 +261,11 @@ def extract_aspect_sentiment_and_failures(
 
     # Partition reviews
     critical_revs = [r for r in clean_revs if r["rating"] <= 3.0]
+    # STRICT: Only verified organic positive reviews (rating >= 4 and definitely NOT suspicious)
     genuine_high_revs = [r for r in clean_revs if r["rating"] >= 4.0 and not r["is_suspicious"]]
-    if not genuine_high_revs:
-        genuine_high_revs = [r for r in clean_revs if r["rating"] >= 4.0]
 
     # -----------------------------------------------------------------------
-    # 1. Product Failure Modes Analysis (from Critical / Negative Reviews)
+    # 1. Product Failure Modes Analysis
     # -----------------------------------------------------------------------
     failure_modes = []
     aspect_counts = {k: {"neg": 0, "pos": 0, "quotes_neg": [], "quotes_pos": []} for k in ASPECT_DEFINITIONS}
@@ -266,36 +273,35 @@ def extract_aspect_sentiment_and_failures(
     for rev in clean_revs:
         t_low = rev["text"].lower()
         r_val = rev["rating"]
+        is_susp = rev["is_suspicious"]
 
         for aspect_key, spec in ASPECT_DEFINITIONS.items():
-            # Check aspect keyword presence with word boundaries
             kw_match = any(re.search(r"\b" + re.escape(kw) + r"\b", t_low) for kw in spec["keywords"])
             if not kw_match:
                 continue
 
-            # Check failure patterns
             has_fail_pattern = any(re.search(pat, t_low) for pat in spec["failure_patterns"])
-            # Check positive patterns
             has_pos_pattern = any(re.search(pat, t_low) for pat in spec["positive_patterns"])
 
+            # Critical complaints
             if r_val <= 3.0 or has_fail_pattern:
                 aspect_counts[aspect_key]["neg"] += 1
-                q = _clean_quote(rev["text"], target_keywords=spec["keywords"])
+                q = _extract_targeted_clause(rev["text"], spec["keywords"], is_negative_context=True)
                 if q and len(aspect_counts[aspect_key]["quotes_neg"]) < 4:
                     aspect_counts[aspect_key]["quotes_neg"].append({
                         "rating": int(r_val),
                         "quote": q
                     })
-            elif r_val >= 4.0 or has_pos_pattern:
+            # Genuine Praise: Only if NOT suspicious and rating >= 4
+            elif (r_val >= 4.0 or has_pos_pattern) and not is_susp:
                 aspect_counts[aspect_key]["pos"] += 1
-                q = _clean_quote(rev["text"], target_keywords=spec["keywords"])
+                q = _extract_targeted_clause(rev["text"], spec["keywords"], is_negative_context=False)
                 if q and len(aspect_counts[aspect_key]["quotes_pos"]) < 4:
                     aspect_counts[aspect_key]["quotes_pos"].append({
                         "rating": int(r_val),
                         "quote": q
                     })
 
-    # Compile failure modes
     total_critical = max(len(critical_revs), 1)
 
     for aspect_key, counts in aspect_counts.items():
@@ -306,25 +312,15 @@ def extract_aspect_sentiment_and_failures(
         spec = ASPECT_DEFINITIONS[aspect_key]
         incidence_pct = round((neg_count / total_critical) * 100.0, 1)
 
-        # Assign severity
         if incidence_pct >= 40.0 or any("fire" in q["quote"].lower() or "melted" in q["quote"].lower() or "overheat" in q["quote"].lower() for q in counts["quotes_neg"]):
             severity = "Critical Failure Risk"
-            severity_color = "#f43f5e"  # Rose red
+            severity_color = "#f43f5e"
         elif incidence_pct >= 20.0:
             severity = "High Recurrence"
-            severity_color = "#f97316"  # Orange
+            severity_color = "#f97316"
         else:
             severity = "Moderate Defect Rate"
-            severity_color = "#eab308"  # Amber
-
-        # Determine best root cause statement
-        root_causes = spec.get("root_causes", {})
-        root_cause_explanation = list(root_causes.values())[0]
-        quotes_joined = " ".join(q["quote"].lower() for q in counts["quotes_neg"])
-        for sub_cause, explanation in root_causes.items():
-            if sub_cause.replace("_", " ") in quotes_joined:
-                root_cause_explanation = explanation
-                break
+            severity_color = "#eab308"
 
         failure_modes.append({
             "aspect_key": aspect_key,
@@ -334,17 +330,19 @@ def extract_aspect_sentiment_and_failures(
             "incidence_pct": min(100.0, incidence_pct),
             "severity": severity,
             "severity_color": severity_color,
-            "root_cause_summary": root_cause_explanation,
+            "root_cause_summary": spec["customer_plain_cause"],
             "evidence_quotes": counts["quotes_neg"]
         })
 
-    # Sort failure modes by complaint incidence descending
+    # Sort failure modes by complaint incidence
     failure_modes.sort(key=lambda x: (x["complaint_count"], x["incidence_pct"]), reverse=True)
 
     # -----------------------------------------------------------------------
-    # 2. Authentic Pros Extraction (Genuine Praise)
+    # 2. Authentic Pros Extraction (Verified Organic Reviews ONLY)
     # -----------------------------------------------------------------------
     pros_list = []
+    seen_pro_quotes = set()
+
     for aspect_key, counts in aspect_counts.items():
         pos_count = counts["pos"]
         neg_count = counts["neg"]
@@ -354,125 +352,172 @@ def extract_aspect_sentiment_and_failures(
         total_mentions = pos_count + neg_count
         sentiment_ratio = round((pos_count / max(total_mentions, 1)) * 100.0)
 
-        if sentiment_ratio >= 50 and counts["quotes_pos"]:
+        # Must have genuine positive reviews
+        if sentiment_ratio >= 45 and counts["quotes_pos"]:
             spec = ASPECT_DEFINITIONS[aspect_key]
             
             pro_titles = {
-                "battery": "Reliable Power Delivery & Battery Life",
-                "build": "Solid Physical Build & Structural Integrity",
-                "connectivity": "Seamless Pairing & Stable Wireless Link",
-                "audio": "Clear Acoustic Profile & Articulate Sound",
-                "ergonomics": "Ergonomically Balanced Fit & Day-long Comfort",
-                "software": "Smooth Touch Interface & Broad Compatibility"
+                "battery": "Reliable Battery Life & Power",
+                "build": "Solid Build & Premium Materials",
+                "connectivity": "Fast, Stable Wireless Connection",
+                "audio": "Clear Sound Quality & Good Call Audio",
+                "ergonomics": "Comfortable Grip & Everyday Fit",
+                "software": "Smooth Interface & Useful Software Features"
             }
             
-            best_quote = counts["quotes_pos"][0]
-            pros_list.append({
-                "aspect_key": aspect_key,
-                "category": spec["title"],
-                "icon": spec["icon"],
-                "aspect_title": pro_titles.get(aspect_key, f"Commendable {spec['title']}"),
-                "sentiment_score": sentiment_ratio,
-                "frequency": pos_count,
-                "evidence_quote": best_quote["quote"],
-                "rating": best_quote["rating"]
-            })
+            best_quote = None
+            for candidate in counts["quotes_pos"]:
+                if candidate["quote"] not in seen_pro_quotes:
+                    best_quote = candidate
+                    seen_pro_quotes.add(candidate["quote"])
+                    break
+
+            if best_quote:
+                pros_list.append({
+                    "aspect_key": aspect_key,
+                    "category": spec["title"],
+                    "icon": spec["icon"],
+                    "aspect_title": pro_titles.get(aspect_key, f"Commendable {spec['title']}"),
+                    "sentiment_score": sentiment_ratio,
+                    "frequency": pos_count,
+                    "evidence_quote": best_quote["quote"],
+                    "rating": best_quote["rating"]
+                })
 
     pros_list.sort(key=lambda x: (x["sentiment_score"], x["frequency"]), reverse=True)
 
+    # Fallback only from GENUINE organic reviews (NEVER suspicious/fake reviews)
     if not pros_list and genuine_high_revs:
         for r in genuine_high_revs[:2]:
-            pros_list.append({
-                "aspect_key": "general",
-                "category": "General Performance",
-                "icon": "✨",
-                "aspect_title": "Satisfactory General Functionality",
-                "sentiment_score": 85,
-                "frequency": 1,
-                "evidence_quote": _clean_quote(r["text"]),
-                "rating": int(r["rating"])
+            q = _extract_targeted_clause(r["text"], ["great", "good", "love", "useful", "nice"])
+            if q not in seen_pro_quotes:
+                seen_pro_quotes.add(q)
+                pros_list.append({
+                    "aspect_key": "general",
+                    "category": "General Performance",
+                    "icon": "✨",
+                    "aspect_title": "Satisfactory Overall Performance",
+                    "sentiment_score": 85,
+                    "frequency": 1,
+                    "evidence_quote": q,
+                    "rating": int(r["rating"])
+                })
+
+    # -----------------------------------------------------------------------
+    # 3. Authentic Cons Extraction (Deduplicated Across Categories)
+    # -----------------------------------------------------------------------
+    cons_list = []
+    seen_con_quotes = set()
+
+    for mode in failure_modes:
+        spec = ASPECT_DEFINITIONS.get(mode["aspect_key"], {})
+        con_title = spec.get("con_title", f"{mode['category']} Limitations")
+
+        # Select a unique evidence quote for this con
+        selected_quote = None
+        selected_rating = 2
+        for eq in mode.get("evidence_quotes", []):
+            if eq["quote"] not in seen_con_quotes:
+                selected_quote = eq["quote"]
+                selected_rating = eq["rating"]
+                seen_con_quotes.add(eq["quote"])
+                break
+
+        # If all quotes from this review were seen, only add if complaints > 1
+        if not selected_quote and mode.get("evidence_quotes"):
+            # Avoid showing the exact same text 3 times; if no unique quote, skip duplicate card
+            continue
+
+        if selected_quote:
+            cons_list.append({
+                "aspect_key": mode["aspect_key"],
+                "category": mode["category"],
+                "icon": mode["icon"],
+                "aspect_title": con_title,
+                "impact_level": mode["severity"],
+                "frequency": mode["complaint_count"],
+                "evidence_quote": selected_quote,
+                "rating": selected_rating
             })
 
     # -----------------------------------------------------------------------
-    # 3. Authentic Cons Extraction (Real Customer Limitations)
-    # -----------------------------------------------------------------------
-    cons_list = []
-    for mode in failure_modes:
-        con_titles = {
-            "battery": "Thermal Overload & Premature Battery Exhaustion",
-            "build": "Vulnerable Structural Casing & Pin Wear",
-            "connectivity": "Intermittent Signal Dropouts & Pairing Desync",
-            "audio": "Microphone Wind Sensitivity & Static Hum",
-            "ergonomics": "Ear Canal Pressure Fatigue & Slipping During Movement",
-            "software": "Touch Pad Sensitivity & Companion App Latency"
-        }
-        evidence_quote = mode["evidence_quotes"][0]["quote"] if mode["evidence_quotes"] else "Customer reported recurring functional degradation."
-        rating_quote = mode["evidence_quotes"][0]["rating"] if mode["evidence_quotes"] else 2
-
-        cons_list.append({
-            "aspect_key": mode["aspect_key"],
-            "category": mode["category"],
-            "icon": mode["icon"],
-            "aspect_title": con_titles.get(mode["aspect_key"], f"{mode['category']} Limitations"),
-            "impact_level": mode["severity"],
-            "frequency": mode["complaint_count"],
-            "evidence_quote": evidence_quote,
-            "rating": rating_quote
-        })
-
-    # -----------------------------------------------------------------------
-    # 4. Aspect Scorecard (Quantitative 0 to 100 rating for each dimension)
+    # 4. Honest Aspect Scorecard (Fix 70/100 bug when 0 mentions)
     # -----------------------------------------------------------------------
     scorecard = {}
     for aspect_key, spec in ASPECT_DEFINITIONS.items():
         pos = aspect_counts[aspect_key]["pos"]
         neg = aspect_counts[aspect_key]["neg"]
         total = pos + neg
+
         if total == 0:
-            score = 70  # Baseline neutral
+            # NO customer feedback: score is None, do NOT claim 70/100!
+            scorecard[spec["title"]] = {
+                "score": None,
+                "has_data": False,
+                "positive_count": 0,
+                "negative_count": 0,
+                "icon": spec["icon"],
+                "status": "Not Mentioned in Reviews",
+                "display": "No Customer Data"
+            }
         else:
+            # Legitimate customer data exists
             score = int(round((pos / total) * 100.0))
-        scorecard[spec["title"]] = {
-            "score": score,
-            "positive_count": pos,
-            "negative_count": neg,
-            "icon": spec["icon"],
-            "status": "Excellent" if score >= 80 else ("Good" if score >= 60 else ("Concerning" if score >= 40 else "Defective"))
-        }
+            if score >= 75:
+                status = "Excellent"
+            elif score >= 50:
+                status = "Good / Minor Trade-offs"
+            elif score >= 25:
+                status = "Frequent Complaints"
+            else:
+                status = "High Defect Rate"
+
+            scorecard[spec["title"]] = {
+                "score": score,
+                "has_data": True,
+                "positive_count": pos,
+                "negative_count": neg,
+                "icon": spec["icon"],
+                "status": status,
+                "display": f"{score}/100"
+            }
 
     # -----------------------------------------------------------------------
-    # 5. Executive Failure Summary & Risk Assessment
+    # 5. Customer-Understandable Failure Summary & Guidance
     # -----------------------------------------------------------------------
-    primary_failure = failure_modes[0]["category"] if failure_modes else "No acute structural failure detected"
-    primary_root_cause = failure_modes[0]["root_cause_summary"] if failure_modes else "Product exhibits organic consumer variance with standard wear rates."
+    primary_failure = failure_modes[0]["category"] if failure_modes else "No recurrent defects detected"
+    primary_plain_cause = failure_modes[0]["root_cause_summary"] if failure_modes else "Product exhibits typical consumer wear without major recurring defects."
     
-    # Calculate Failure Risk Score
     if failure_modes:
         top_incidence = failure_modes[0]["incidence_pct"]
         num_defects = len(failure_modes)
-        failure_risk_score = min(98, int(top_incidence * 0.65 + num_defects * 6))
+        failure_risk_score = min(98, int(top_incidence * 0.60 + num_defects * 7))
     else:
         failure_risk_score = 15
 
-    if failure_risk_score >= 70:
-        risk_level = "High Risk of Failure"
+    if failure_risk_score >= 65:
+        risk_level = "High Defect Risk"
         risk_color = "#f43f5e"
-        durability_verdict = "Severe Hardware / Component Vulnerability Detected"
-    elif failure_risk_score >= 45:
-        risk_level = "Elevated Defect Likelihood"
+        buyer_advice = "Frequent hardware issues reported. Proceed with caution if you rely on this product daily."
+    elif failure_risk_score >= 35:
+        risk_level = "Moderate Trade-Offs"
         risk_color = "#f97316"
-        durability_verdict = "Noticeable Component Wear; Proceed with Caution"
+        buyer_advice = "Some noticeable flaws reported by buyers, but product remains functional for general use."
     else:
         risk_level = "Low Failure Rate"
         risk_color = "#10b981"
-        durability_verdict = "Hardware Stability Meets Consumer Longevity Standards"
+        buyer_advice = "Hardware stability is solid with few severe customer complaints."
 
-    executive_diagnostic = (
-        f"Forensic inspection of customer reviews indicates that the primary failure driver is **{primary_failure}**, "
-        f"which accounts for **{failure_modes[0]['incidence_pct'] if failure_modes else 0:.1f}%** of negative buyer feedback. "
-        f"Root-cause analysis reveals: {primary_root_cause} "
-        f"Overall failure risk is classified as **{risk_level}** ({failure_risk_score}/100)."
-    )
+    # Customer-friendly diagnostic summary
+    if failure_modes:
+        pct_mention = failure_modes[0]['incidence_pct']
+        exec_text = (
+            f"The #1 problem reported by customers is **{primary_failure}** (mentioned in **{pct_mention:.0f}%** of critical reviews). "
+            f"**What happens:** {primary_plain_cause} "
+            f"**Buyer Advice:** {buyer_advice}"
+        )
+    else:
+        exec_text = "Verified reviews indicate consistent day-to-day performance with no major recurring hardware breakdowns."
 
     return {
         "summary": {
@@ -483,8 +528,8 @@ def extract_aspect_sentiment_and_failures(
             "failure_risk_score": failure_risk_score,
             "failure_risk_level": risk_level,
             "failure_risk_color": risk_color,
-            "durability_verdict": durability_verdict,
-            "executive_diagnostic": executive_diagnostic
+            "durability_verdict": buyer_advice,
+            "executive_diagnostic": exec_text
         },
         "failure_modes": failure_modes,
         "pros": pros_list,
@@ -503,7 +548,7 @@ def _empty_aspect_result() -> Dict[str, Any]:
             "failure_risk_score": 0,
             "failure_risk_level": "N/A",
             "failure_risk_color": "#94a3b8",
-            "durability_verdict": "Insufficient data to compute diagnostic report",
+            "durability_verdict": "Insufficient data to analyze product reliability.",
             "executive_diagnostic": "No customer feedback found for this product."
         },
         "failure_modes": [],
