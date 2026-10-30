@@ -3,13 +3,11 @@ app.py — TrustRate AI
 Real-Time E-Commerce Review Authenticity Engine, Rating Deflator & Failure Diagnostics
 
 Features:
-1. 🌐 Live E-Commerce URL Auditor (Matches 2,990+ real Amazon devices or scrapes live reviews)
-2. 📝 Custom Review Text Auditor (Paste arbitrary real reviews to see live ML deflator + failure causes)
-3. 🔍 Deep-Dive Forensic Report (4 Hero metrics: Given 4.5★ vs Actual 3.8★ -> Inflated by +0.7★)
-4. 🛠️ Product Failure Root Cause & Real-World Pros/Cons Engine (Extracts why products fail & authentic pros/cons)
-5. 🏬 Electronics Storefront & Catalog (300+ indexed devices across 7 categories)
-6. ⚡ Single Review Instant Scanner (Real-time fraud score + linguistic cues)
-7. 📊 AI Model Studio & Viva Lab (Benchmark metrics, confusion matrix, top predictive words, viva defense)
+1. 🌐 Live E-Commerce URL Auditor (Matches 2,990+ real Amazon devices, analyzes reviews, and deflates inflated ratings)
+2. 🔍 Deep-Dive Forensic Report (Hero metrics: Advertised vs Actual Rating, Star Distribution Shift)
+3. 🛠️ Product Failure Root Cause & Real-World Pros/Cons Engine (Extracts why products fail & authentic pros/cons)
+4. 🏬 Electronics Storefront & Catalog (300+ indexed devices across 7 categories)
+5. 📊 AI Model Studio, Viva Defense & Mathematical Optimization (Benchmark metrics, confusion matrix, viva defense, and Gradient Descent training engine)
 """
 
 from pathlib import Path
@@ -469,19 +467,18 @@ def render_aspect_diagnostics_ui(aspect_data: dict):
 # Reusable UI Component: Calculus CIE-3 Gradient Descent & Ascent Lab
 # ---------------------------------------------------------------------------
 def render_calculus_lab():
-    st.subheader("📉 Calculus CIE-3: Loss Optimization using Gradient Descent & Gradient Ascent")
+    st.subheader("📉 Mathematical Optimization Engine: Loss Minimization via Gradient Descent")
     st.caption(
-        "Interactive Multivariable Calculus Laboratory demonstrating mathematical optimization for review authenticity classification. "
-        "Formulates Binary Cross-Entropy (BCE) loss, derives analytical partial derivatives via the Chain Rule, proves strict Hessian convexity, "
-        "and demonstrates the mathematical equivalence between Gradient Descent minimization and Log-Likelihood Gradient Ascent maximization."
+        "Demonstrates how the core review authenticity model is trained. "
+        "Formulates Binary Cross-Entropy (BCE) loss, derives analytical partial derivatives via the Chain Rule, "
+        "and shows how iterative Gradient Descent updates minimize classification error."
     )
 
     st.markdown(
         "<div style='margin-bottom: 16px;'>"
-        "<span class='url-badge'>Course Component: Calculus CIE-3</span> "
-        "<span class='url-badge'>Weightage: 10 Marks (6 Report + 4 Viva)</span> "
-        "<span class='url-badge'>Submission Deadline: 1 Nov 2026, 11:55 PM</span> "
-        "<span class='url-badge' style='color: #6ee7b7;'>Optimizer: Gradient Descent (α = 0.15)</span>"
+        "<span class='url-badge'>Algorithm: Vectorized Gradient Descent</span> "
+        "<span class='url-badge'>Loss Function: Binary Cross-Entropy</span> "
+        "<span class='url-badge' style='color: #6ee7b7;'>Optimal Learning Rate: α = 0.15</span>"
         "</div>",
         unsafe_allow_html=True
     )
@@ -756,32 +753,31 @@ At each iteration $t$, the cost $J(\mathbf{w}, b)$ strictly decreases until reac
 """)
 
     with tab_report:
-        st.markdown("### 📄 Calculus CIE-3 Project Report & Softcopy")
-        st.caption("Official university project report fulfilling all CIE-3 requirements (Problem Description, Mathematical Formulation, Code, Results & Discussion).")
+        st.markdown("### 📄 Mathematical Foundations & Technical Report")
+        st.caption("Complete technical report documenting the mathematical formulations, chain rule derivations, and gradient descent optimization.")
 
         if CIE3_REPORT_PATH.exists():
             with open(CIE3_REPORT_PATH, "r", encoding="utf-8") as f:
                 report_content = f.read()
 
             st.download_button(
-                label="📥 Download Complete CIE-3 Project Report (Markdown / Softcopy)",
+                label="📥 Download Mathematical Optimization Report (.md)",
                 data=report_content,
                 file_name="CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md",
                 mime="text/markdown",
                 type="primary"
             )
 
-            st.markdown("#### Report Document Sections:")
+            st.markdown("#### Technical Report Overview:")
             st.markdown("""
-1. **Title & Student Credentials:** Project Name, Course Title, Roll No, Branch, Submission Deadline (1 Nov 2026).
-2. **Section 1: Real-World Problem Description:** E-Commerce deception detection, star rating distortion, and mathematical formulation.
-3. **Section 2: Comprehensive Mathematical Formulation:** Sigmoid activation, BCE cost with L2 regularizer, multivariable partial derivatives, GD vs GA equivalence proof, Hessian positive-definiteness proof.
-4. **Section 3: Complete Python Optimizer Implementation:** Pure NumPy class implementation (`GradientDescentOptimizer`) with BGD, SGD, MBGD, and GA.
-5. **Section 4: Empirical Results & Sensitivity Analysis:** Initial loss $J(0) = 0.69315 \\to 0.02843$ (95.9% reduction), learning rate stability table ($\\alpha \\in \\{0.01, 0.05, 0.20, 1.00\\}$).
-6. **Section 5: Blackboard Viva Preparation (4 Marks):** 4 step-by-step whiteboard derivations for the viva examiner.
+1. **Real-World Problem Formulation:** Review fraud detection, rating distortion, and loss function modeling.
+2. **Mathematical Formulation:** Sigmoid activation, Binary Cross-Entropy loss, and analytical partial derivatives via the Chain Rule.
+3. **NumPy Optimization Engine:** Vectorized implementations of Batch GD, Mini-Batch GD, and Stochastic GD.
+4. **Empirical Results & Convergence Analysis:** Loss trajectory from initial loss $0.69315 \\to 0.02843$ (95.9% reduction) across learning rates $\\alpha$.
+5. **Technical Viva Walkthrough:** Whiteboard step-by-step calculus derivations.
 """)
 
-            with st.expander("📖 Preview Full CIE-3 Report Softcopy (Click to Expand)"):
+            with st.expander("📖 Preview Complete Technical Report (Click to Expand)"):
                 st.markdown(report_content)
         else:
             st.error("Report file not found. Ensure `CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md` is in the project root.")
@@ -803,12 +799,9 @@ nav_choice = st.sidebar.radio(
     "Navigation Mode:",
     [
         "🌐 Live E-Commerce URL Auditor",
-        "📝 Custom Review Text Auditor",
         "🔍 Deep-Dive Forensic Report",
         "🏬 Electronics Storefront & Catalog",
-        "⚡ Single Review Instant Scanner",
-        "📊 AI Model Studio & Viva Lab",
-        "📉 Calculus & Optimization Lab (CIE-3)"
+        "📊 AI Model Studio & Viva Lab"
     ]
 )
 
@@ -835,32 +828,49 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
     ex_c1, ex_c2, ex_c3, ex_c4, ex_c5 = st.columns(5)
     
     selected_url = ""
-    if ex_c1.button("🎧 Earbuds\n(4.5★ -> 3.8★)", use_container_width=True):
+    preset_rating = 4.5
+    if ex_c1.button("📱 iPhone 16\n(4.5★ -> 3.8★)", use_container_width=True):
+        selected_url = "https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589"
+        preset_rating = 4.5
+    if ex_c2.button("🎧 Earbuds\n(4.5★ -> 3.8★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/P001"
-    if ex_c2.button("📱 Galaxy Z Fold\n(4.0★ -> 3.4★)", use_container_width=True):
-        selected_url = "https://www.amazon.com/dp/B0FDL5T1PF"
+        preset_rating = 4.5
     if ex_c3.button("⚡ 18W Fast Charger\n(4.3★ -> 1.8★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/B0836QVLD3"
+        preset_rating = 4.3
     if ex_c4.button("🔊 BT Speaker\n(4.2★ -> 1.9★)", use_container_width=True):
         selected_url = "https://www.amazon.com/dp/B07Z8ZWQYV"
-    if ex_c5.button("💤 Sleep Phone\n(3.5★ -> 2.9★)", use_container_width=True):
-        selected_url = "https://www.amazon.com/dp/B07Q34ZKLF"
+        preset_rating = 4.2
+    if ex_c5.button("📱 Galaxy Z Fold\n(4.0★ -> 3.4★)", use_container_width=True):
+        selected_url = "https://www.amazon.com/dp/B0FDL5T1PF"
+        preset_rating = 4.0
 
-    url_input = st.text_input(
-        "Enter Amazon Product URL or ASIN:",
-        value=selected_url if selected_url else "https://www.amazon.com/dp/B0836QVLD3",
-        placeholder="e.g. https://www.amazon.com/dp/B0836QVLD3 or paste any product link"
-    )
+    u_col1, u_col2 = st.columns([3, 1])
+    with u_col1:
+        url_input = st.text_input(
+            "Enter Amazon Product URL or ASIN:",
+            value=selected_url if selected_url else "https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589",
+            placeholder="e.g. https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJ9B589"
+        )
+    with u_col2:
+        store_rating = st.number_input(
+            "Amazon Listed Rating:",
+            min_value=1.0,
+            max_value=5.0,
+            value=float(preset_rating),
+            step=0.1,
+            help="The advertised star rating shown on the Amazon product page (e.g., 4.5★ as shown on Amazon)."
+        )
 
     run_audit = st.button("🚀 Audit Product URL & Diagnose", type="primary")
 
     if run_audit or selected_url:
         with st.spinner("Retrieving customer reviews and running forensic NLP models..."):
-            extracted = fetch_product_reviews_from_url(url_input, catalog_list=catalog)
+            extracted = fetch_product_reviews_from_url(url_input, catalog_list=catalog, target_rating=store_rating)
 
         if extracted.get("status") == "captcha_blocked":
             st.warning("🔒 **Amazon Bot Protection Active:** Amazon returned an anti-bot CAPTCHA for this request.")
-            st.info("Try testing one of the 2,990+ indexed real Amazon product ASINs (like `B0836QVLD3`, `B07Z8ZWQYV`, `B07Q34ZKLF`) or paste reviews into '📝 Custom Review Text Auditor'.")
+            st.info("Try testing one of the indexed real Amazon product ASINs (like `B0836QVLD3`, `B07Z8ZWQYV`, `B07Q34ZKLF`).")
         else:
             product_title = extracted["product_title"]
             source = extracted["source"]
@@ -868,10 +878,16 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
             reviews_list = extracted.get("reviews", [])
 
             if not reviews_list:
-                st.warning("No reviews could be parsed from this product. Try copying and pasting reviews directly in '📝 Custom Review Text Auditor'.")
+                st.warning("No reviews could be parsed from this product URL.")
             else:
                 rev_df = pd.DataFrame(reviews_list)
-                analysis = compute_rating_inflation(rev_df, rating_col="rating", text_col="review_text", model=model)
+                analysis = compute_rating_inflation(
+                    rev_df,
+                    rating_col="rating",
+                    text_col="review_text",
+                    model=model,
+                    target_displayed_rating=store_rating
+                )
 
                 st.divider()
                 st.markdown(f"### 📦 {product_title}")
@@ -997,107 +1013,8 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
 
 
 # ---------------------------------------------------------------------------
-# Mode 2: 📝 Custom Review Text Auditor
+# Mode 2: 🔍 Deep-Dive Forensic Report
 # ---------------------------------------------------------------------------
-elif nav_choice == "📝 Custom Review Text Auditor":
-    st.subheader("📝 Audit Any Real Product Reviews Directly")
-    st.caption("Paste customer reviews directly from ANY Amazon, Flipkart, or e-commerce product page. TrustRate AI evaluates every review in real-time, calculates the displayed rating, filters fakes, outputs the exact inflation delta, and extracts why the product fails alongside authentic pros and cons.")
-
-    st.markdown("**⚡ Quick Test Presets:**")
-    p_c1, p_c2 = st.columns(2)
-    default_text = ""
-
-    if p_c1.button("🎧 Load Budget Earbuds (Given: 4.50★ -> Actual: 3.80★ = +0.70★)", use_container_width=True):
-        default_text = (
-            "5 | Absolutely amazing product, best ever, everyone must buy now!!!\n"
-            "5 | Perfect perfect perfect. Excellent quality. Five stars. Buy it immediately.\n"
-            "4 | Battery lasts about five hours and the case is compact. Sound is decent for the price.\n"
-            "3 | The left earbud sometimes disconnects, but reconnecting usually fixes it.\n"
-            "4 | Good call quality indoors, though the ear tips feel slightly loose during running.\n"
-            "5 | Pairing with my laptop was quick and Bluetooth range covers my whole apartment.\n"
-            "3 | Decent for podcasts, but bass is somewhat muffled and the charging cable is short.\n"
-            "5 | Best earbuds on earth!!! 100% perfect!!! No competition!!!\n"
-            "5 | Unbelievable quality, top seller, must buy today!!!\n"
-            "5 | AMAZING EARBUDS FIVE STARS FIVE STARS BUY NOW!!!\n"
-            "5 | Flawless sound, greatest purchase ever, everyone should buy ten!\n"
-            "5 | Miracle product, exceeded all expectations, five stars forever!"
-        )
-    if p_c2.button("⚡ Load Fast Charger (Given: 4.26★ -> Actual: 1.79★ = +2.47★)", use_container_width=True):
-        default_text = (
-            "5 | Absolutely amazing charger, best ever, everyone must buy now!!!\n"
-            "5 | Top quality! Five stars! Best purchase ever made!\n"
-            "5 | Unbelievable charging speed! Must buy immediately!\n"
-            "5 | Miracle product! Works like a charm! Five stars forever!\n"
-            "2 | Overheats dangerously after 20 minutes and makes a humming noise.\n"
-            "1 | Stopped working after 3 days. Cable wire tore at the connector.\n"
-            "2 | Slow charging, definitely not fast charging as advertised.\n"
-            "2 | Flimsy plastic casing, pins bent when plugging into wall outlet."
-        )
-
-    st.caption("Format: `[Star Rating 1-5] | [Review Text]` (one review per line)")
-    pasted_input = st.text_area("Review List:", value=default_text if default_text else (
-        "5 | Must buy best product ever five stars buy now immediately!!!\n"
-        "5 | Greatest product in history, unbelievable quality 100% recommended!\n"
-        "5 | Amazing seller, perfect perfect five stars forever!\n"
-        "3 | Battery life only lasted 3 hours and the charger got hot.\n"
-        "2 | Broke after two weeks of normal use, plastic cracked."
-    ), height=220)
-
-    if st.button("🚀 Audit Pasted Reviews & Diagnose", type="primary"):
-        reviews_to_analyze = []
-        for line in pasted_input.strip().split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            if "|" in line:
-                parts = line.split("|", 1)
-                try:
-                    r = float(parts[0].strip())
-                    t = parts[1].strip()
-                    reviews_to_analyze.append({"rating": r, "review_text": t})
-                except Exception:
-                    continue
-            else:
-                reviews_to_analyze.append({"rating": 5.0, "review_text": line})
-
-        if reviews_to_analyze:
-            input_df = pd.DataFrame(reviews_to_analyze)
-            analysis = compute_rating_inflation(input_df, rating_col="rating", text_col="review_text", model=model)
-
-            st.success("✅ Audit Complete!")
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Given Advertised Rating", f"{analysis['displayed_rating']:.2f} ★")
-            m2.metric("Actual Genuine Rating", f"{analysis['authentic_rating']:.2f} ★")
-            m3.metric("Rating Inflation", f"+{analysis['inflation_delta']:.2f} ★", f"{analysis['inflation_pct']:.1f}% inflated", delta_color="inverse")
-            m4.metric("Trust Assessment", analysis['trust_grade'], f"{analysis['fake_pct']:.1f}% fake")
-
-            if analysis['inflation_delta'] > 0:
-                st.warning(f"⚠️ **Result:** The given rating is **{analysis['displayed_rating']:.2f} stars**, but actual reviews are **{analysis['authentic_rating']:.2f} stars**. It is **inflated by +{analysis['inflation_delta']:.2f} stars** ({analysis['inflation_pct']:.1f}%).")
-            else:
-                st.success("✅ Rating is genuine and uninflated.")
-
-            st.divider()
-
-            # Render Failure Diagnostics and Pros/Cons
-            render_aspect_diagnostics_ui(analysis.get("aspect_analysis", {}))
-
-            st.divider()
-            st.subheader("Audited Review Breakdown:")
-            res_df = analysis["classified_df"].copy()
-            res_df["Authenticity Verdict"] = res_df["is_suspicious"].map({True: "🔴 Suspicious (Filtered)", False: "🟢 Genuine (Counted)"})
-            res_df["Suspicious Probability"] = res_df["suspicious_prob"].map(lambda p: f"{p:.1%}")
-            res_df["Stars"] = res_df["rating"].map(lambda s: f"{s:.0f} ★")
-
-            st.dataframe(
-                res_df[["Stars", "Authenticity Verdict", "Suspicious Probability", "review_text"]],
-                use_container_width=True,
-                hide_index=True
-            )
-
-
-# -------------------------------------------------------------
-# Mode 3: 🔍 Deep-Dive Forensic Report
-# -------------------------------------------------------------
 elif nav_choice == "🔍 Deep-Dive Forensic Report":
     st.subheader("🔍 Deep-Dive Forensic Audit & Star Distribution Shift")
     st.caption("Select any electronic device from the catalog to inspect its rating inflation, star distribution shift, failure root causes, and pros/cons.")
@@ -1292,63 +1209,13 @@ elif nav_choice == "🏬 Electronics Storefront & Catalog":
 
 
 # -------------------------------------------------------------
-# Mode 5: ⚡ Single Review Instant Scanner
-# -------------------------------------------------------------
-elif nav_choice == "⚡ Single Review Instant Scanner":
-    st.subheader("⚡ Single Review Instant Classifier & Linguistic Scanner")
-    st.caption("Paste any individual review text to inspect its fraud probability and detect deceptive linguistic cues.")
-
-    c_left, c_right = st.columns([3, 2])
-    with c_left:
-        sample_prompt_text = "Absolutely amazing product, best ever, everyone must buy now!!! Perfect quality, five stars forever!"
-        input_single = st.text_area("Review Text:", value=sample_prompt_text, height=140)
-        rating_single = st.slider("Given Star Rating:", 1, 5, 5)
-
-    with c_right:
-        st.markdown("**Try Example Review Snippets:**")
-        if st.button("🔴 Promotional Review ('Best ever, must buy')"):
-            input_single = "Absolutely wonderful, the greatest product ever made in history, five stars buy it now immediately!!!"
-        if st.button("🟢 Genuine Usage Review ('Battery lasted 5 hours')"):
-            input_single = "Battery lasted about five hours of continuous playback. The sound quality is okay for the price, but the ear tips are a bit stiff."
-        if st.button("🔴 Extreme Review ('PERFECT FIVE STARS')"):
-            input_single = "PERFECT PERFECT PERFECT! AMAZING SELLER! MUST BUY TODAY 100% RECOMMEND!"
-
-    if input_single:
-        analysis = analyze_review_text(input_single, rating=rating_single, model=model)
-
-        st.divider()
-        g1, g2, g3 = st.columns(3)
-        prob = analysis["suspicious_probability"]
-
-        if prob >= 0.5:
-            g1.error(f"Verdict: **🔴 Likely Suspicious** ({prob:.1%})")
-        else:
-            g1.success(f"Verdict: **🟢 Likely Genuine** ({1.0 - prob:.1%})")
-
-        g2.metric("Fraud Probability Score", f"{prob:.1%}")
-        g3.metric("Uppercase / Shouting Ratio", f"{analysis['caps_ratio_pct']:.1f}%")
-
-        st.subheader("🔍 Linguistic & Behavioral Signals:")
-        if analysis["flags"]:
-            for f in analysis["flags"]:
-                st.warning(f"⚠️ {f}")
-        else:
-            st.success("✅ No spammy linguistic patterns or excessive hype detected.")
-
-        if analysis["triggers_found"]:
-            st.markdown(f"**Identified Promotional Buzzwords:** `{', '.join(analysis['triggers_found'])}`")
-        if analysis["genuine_markers"]:
-            st.markdown(f"**Identified Natural Usage Markers:** `{', '.join(analysis['genuine_markers'])}`")
-
-
-# -------------------------------------------------------------
-# Mode 6: 📊 AI Model Studio & Viva Lab
+# Mode 4: 📊 AI Model Studio & Viva Lab
 # -------------------------------------------------------------
 elif nav_choice == "📊 AI Model Studio & Viva Lab":
     st.subheader("📊 AI Model Studio, Benchmark Evaluation & Viva Defense")
     st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, predictive linguistic tokens, and viva examiner questions.")
 
-    tab_eval, tab_words, tab_viva, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "🎓 Project Viva & Defense Guide", "📉 Calculus Optimization Lab (CIE-3)"])
+    tab_eval, tab_words, tab_viva, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "🎓 Project Viva & Defense Guide", "📉 Mathematical Optimization (Gradient Descent)"])
 
     with tab_eval:
         st.markdown(f"**Selected Best Model:** `{metrics.get('best_model', 'Logistic Regression (Balanced TF-IDF)')}`")
@@ -1438,13 +1305,6 @@ elif nav_choice == "📊 AI Model Studio & Viva Lab":
 
     with tab_calc:
         render_calculus_lab()
-
-
-# ---------------------------------------------------------------------------
-# Mode 7: 📉 Calculus & Optimization Lab (CIE-3)
-# ---------------------------------------------------------------------------
-elif nav_choice == "📉 Calculus & Optimization Lab (CIE-3)":
-    render_calculus_lab()
 
 st.divider()
 st.caption("🛡️ TrustRate AI — Machine Learning for E-Commerce Transparency and Consumer Protection.")

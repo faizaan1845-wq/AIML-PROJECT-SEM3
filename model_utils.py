@@ -108,10 +108,10 @@ def analyze_review_text(text, rating=None, model=None):
     }
 
 
-def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_text", model=None):
+def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_text", model=None, target_displayed_rating=None):
     """
     Given a DataFrame of reviews for a product:
-    - Calculates Displayed / Original Rating
+    - Calculates Displayed / Original Rating (or uses target_displayed_rating if provided)
     - Predicts suspicious probability for each review using hybrid ML + linguistic signals
     - Filters out suspicious reviews to obtain Authentic / Adjusted Rating
     - Computes exact Rating Inflation: (Displayed - Authentic)
@@ -137,7 +137,10 @@ def compute_rating_inflation(reviews_df, rating_col="rating", text_col="review_t
             "aspect_analysis": {}
         }
         
-    displayed_rating = float(df[rating_col].mean())
+    if target_displayed_rating is not None and float(target_displayed_rating) > 0:
+        displayed_rating = round(float(target_displayed_rating), 2)
+    else:
+        displayed_rating = float(df[rating_col].mean())
     
     # Score each review
     probs = []

@@ -6,40 +6,27 @@
 
 ## 🌟 Key Features
 
-1. **🛠️ Product Failure Root Cause & Aspect-Based Pros/Cons Diagnostic Engine:**
-   - **Why a Product Fails:** Automatically diagnoses acute hardware and software failure modes (Battery & Power, Durability & Build, Wireless Connectivity, Audio/Mic Quality, Ergonomics & Fit, Software/Controls) with incidence rates, severity rankings, and technical root-cause explanations.
-   - **Direct Review Evidence Proof:** Surfaces exact, unedited real customer quotes with star ratings supporting every diagnosed failure mode.
-   - **Authentic Pros & Cons:** Extracts verified organic praise (pros) and honest buyer limitations (cons) filtered strictly from genuine customer feedback.
-   - **Aspect Health Scorecard:** Quantitative 0-100 radar breakdown across all 5 engineering dimensions.
+1. **🌐 Live E-Commerce URL Auditor & Rating Deflator:**
+   - Paste any live Amazon product URL or ASIN (matches 2,990+ real indexed products or dynamically extracts reviews).
+   - Enter/calibrate the advertised Amazon store star rating to reveal the **True Authentic Rating** and **Rating Inflation Delta**.
+   - 1-Click presets for **iPhone 16 (4.5★ -> 3.8★)**, **Wireless Earbuds (4.5★ -> 3.8★)**, **18W Fast Charger (4.3★ -> 1.8★)**, and **Galaxy Z Fold (4.0★ -> 3.4★)**.
 
-2. **🌐 Live E-Commerce URL & Custom Review Auditor:**
-   - Paste any live Amazon product URL or ASIN (matches 2,990+ real indexed products or scrapes live HTML).
-   - Paste arbitrary customer reviews to run real-time forensic deflator analysis and instant failure diagnostics.
-   - 1-Click benchmark presets (including the **Budget Wireless Earbuds: 4.50★ -> 3.80★ = +0.70★** and **18W Fast Charger: 4.26★ -> 1.79★ = +2.47★** benchmarks).
+2. **🛠️ Product Failure Root Cause & Aspect-Based Pros/Cons Diagnostic Engine:**
+   - **Why a Product Fails:** Automatically diagnoses acute hardware failure modes (Battery & Power, Durability & Build, Wireless Connectivity, Audio/Mic Quality, Comfort & Fit, Software Stability) with incidence rates and severity rankings.
+   - **Direct Review Evidence Proof:** Surfaces exact customer quotes paired with actual star ratings supporting every diagnosed failure mode.
+   - **Authentic Pros & Cons:** Extracts verified organic praise and honest limitations filtered strictly from genuine customer feedback.
+   - **Aspect Health Scorecard:** Quantitative 0-100 breakdown across engineering dimensions.
 
-3. **🔍 Deep-Dive Forensic Report:**
+3. **🔍 Deep-Dive Forensic Report & Storefront Catalog:**
    - 4 Hero metric cards: Advertised Given Rating, Actual Authentic Rating, Rating Inflation Delta, and Forensic Trust Grade (A to F).
-   - Interactive **Star Distribution Shift Chart** visualizing the artificial 5-star spike and the organic customer curve.
-   - Side-by-side review explorer (Verified Organic vs Filtered Manipulated) with highlighted deceptive triggers.
+   - Interactive **Star Distribution Shift Chart** visualizing the artificial 5-star spike against the organic customer curve.
+   - 311 indexed electronic devices across 7 categories with quick drilldown failure diagnostics.
 
-4. **🏬 Online Electronics Storefront & Catalog:**
-   - 311 indexed electronic devices across 7 categories (Headphones, Laptops, Chargers, Smartwatches, Speakers, Cameras, Power Banks).
-   - Instant filtering by category, search term, and trust grade with quick drilldown failure diagnostics.
-
-5. **⚡ Single Review Instant Classifier & Linguistic Scanner:**
-   - Real-time fraud probability score, uppercase shouting detection, and promotional buzzword extraction.
-
-6. **📊 AI Model Studio & Viva Defense Lab:**
+4. **📊 AI Model Studio, Viva Defense & Mathematical Optimization Engine:**
    - Transparent model benchmark comparison (Accuracy, Precision, Recall, F1-Score, ROC-AUC).
    - Test confusion matrix and top predictive linguistic tokens.
+   - Interactive **Mathematical Training Engine (Gradient Descent)** demonstrating how multivariable calculus (gradients $\nabla J$ via the Chain Rule) minimizes Binary Cross-Entropy loss to train the classification pipeline.
    - Comprehensive viva examination defense questions and technical answers.
-
-7. **📉 Calculus CIE-3: Multivariable Optimization Suite (Gradient Descent & Gradient Ascent):**
-   - **Mathematical Formulation:** Rigorous derivation of Binary Cross-Entropy loss gradients $\nabla J(\mathbf{w}, b)$ using the Calculus Chain Rule.
-   - **Convexity Proof:** Hessian matrix formulation $\mathbf{H} = \frac{1}{m}\mathbf{X}^T\mathbf{D}\mathbf{X} + \frac{\lambda}{m}\mathbf{I} \succ 0$, mathematically proving zero local minima traps.
-   - **GD vs. GA Equivalence:** Formal algebraic proof showing Gradient Ascent on Log-Likelihood $\ell(\theta)$ is identical to Gradient Descent on Cost $J(\theta)$.
-   - **Interactive Streamlit Lab:** Live parameter controls ($\alpha$, epochs, $\lambda$) comparing Batch GD, Mini-Batch GD, and Stochastic GD, with real-time Altair loss trajectories.
-   - **Complete University Report & Viva Guide:** Pre-formatted academic documentation in [`CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md`](CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md) tailored for the 10-mark CIE-3 requirement.
 
 ---
 

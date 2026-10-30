@@ -220,4 +220,4 @@ $$b := b - \alpha \frac{\partial J}{\partial b}$$
 - **Initial Cost ($J$ at $\mathbf{0}$):** $J(0) = \ln(2) \approx 0.69315$
 - **Final Converged Cost:** $0.02843$ (**95.9% loss reduction**)
 - **Optimal Learning Rate:** $\alpha = 0.15$ for rapid, stable convergence.
-- **Interactive Lab:** Accessible directly inside `app.py` via sidebar option **📉 Calculus & Optimization Lab (CIE-3)**.
+- **Interactive Lab:** Accessible directly inside `app.py` under the **📊 AI Model Studio & Viva Lab** tab: **📉 Mathematical Optimization (Gradient Descent)**.
