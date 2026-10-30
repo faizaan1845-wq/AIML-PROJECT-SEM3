@@ -250,7 +250,7 @@ def generate_device_reviews(title, asin, target_rating=4.5):
     return reviews
 
 
-def fetch_product_reviews_from_url(url, catalog_list=None, target_rating=4.5):
+def fetch_product_reviews_from_url(url, catalog_list=None, target_rating=4.5, *args, **kwargs):
     """
     Primary review retrieval pipeline:
     1. Extracts ASIN from anywhere in the URL (query or path).
@@ -262,7 +262,16 @@ def fetch_product_reviews_from_url(url, catalog_list=None, target_rating=4.5):
     asin = extract_asin_from_url(clean_url)
     inferred_title = extract_title_from_url(clean_url)
     db = get_asin_db()
-    target_rating = float(target_rating) if target_rating is not None else 4.5
+    
+    if "target_rating" in kwargs:
+        target_rating = kwargs["target_rating"]
+    elif len(args) > 0:
+        target_rating = args[0]
+        
+    try:
+        target_rating = float(target_rating) if target_rating is not None else 4.5
+    except Exception:
+        target_rating = 4.5
     
     # Priority 1: Check Catalog List if provided (Curated Balanced Benchmark Reviews)
     if asin and catalog_list:
