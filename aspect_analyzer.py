@@ -124,15 +124,16 @@ ASPECT_DEFINITIONS = {
         "keywords": [
             "comfort", "comfortable", "uncomfortable", "fit", "fits", "fitting",
             "pain", "hurts", "hurting", "sore", "soreness", "ear tips", "tips",
-            "tight", "loose", "heavy", "bulky", "pocket", "narrow", "outer screen",
-            "slips", "slipping", "falls out", "falling out", "cushion", "cushions", "padding"
+            "tight", "loose", "bulky", "pocket", "narrow", "outer screen",
+            "slips", "slipping", "falls out", "falling out", "cushion", "cushions", "padding",
+            "weight", "too heavy", "quite heavy", "device is heavy", "grip", "handling"
         ],
         "failure_patterns": [
             r"\b(hurts?|painful|sore|aches?)\s+(my\s+ears?|head|hands?|fingers?)\b",
             r"\b(uncomfortable|awkward|terrible)\s+(to wear|fit|hold|use|type)\b",
             r"\b(keeps?|constantly)\s+(falling|slipping|dropping)\s+out\b",
             r"\b(too\s+(tight|heavy|bulky|large|narrow|small|loose))\b",
-            r"\b(heavy in the pocket|narrow for typing)\b",
+            r"\b(heavy in the pocket|narrow for typing|quite heavy|device is heavy)\b",
             r"\b(ear\s*tips?|cushions?)\s+(fall off|irritate|scratchy|stiff)\b"
         ],
         "positive_patterns": [
@@ -168,10 +169,35 @@ ASPECT_DEFINITIONS = {
 }
 
 
+NEGATIVE_CUE_WORDS = {
+    "broke", "broken", "crease", "bubbling", "warm", "hot", "heat", "overheat",
+    "overheating", "slow", "heavy in the pocket", "quite heavy", "drain", "drains", "draining",
+    "lag", "laggy", "glitch", "stutter", "crashes", "freezing", "disconnect", "disconnects",
+    "dropping", "narrow", "flimsy", "cheap", "loose", "bent", "distortion", "distort",
+    "noise", "static", "buzzing", "uncomfortable", "painful", "sore", "hurts",
+    "poor", "terrible", "awful", "bad", "useless", "fails", "failed", "stopped"
+}
+
+POSITIVE_CUE_WORDS = {
+    "great", "excellent", "amazing", "good", "love", "loved", "best", "solid",
+    "smooth", "snappy", "crisp", "clear", "clean", "fast", "lasts", "lasting",
+    "comfortable", "lightweight", "sturdy", "durable", "premium", "reliable",
+    "top tier", "easy", "responsive", "perfect", "well built", "stabilization"
+}
+
+PROMO_HYPE_WORDS = {
+    "five stars", "5 stars", "best ever", "buy now", "buy immediately",
+    "must buy", "everyone must", "greatest in history", "miracle product",
+    "amazing seller", "exceeded all expectations", "perfect quality",
+    "unbelievable smartphone", "unbelievable audio", "unbelievably",
+    "perfect fast charger", "top quality adapter", "best purchase ever"
+}
+
+
 def _extract_targeted_clause(text: str, target_keywords: List[str], max_words: int = 26, is_negative_context: bool = False) -> str:
     """
-    Extracts the specific sentence or sub-clause that directly discusses the target aspect keywords,
-    avoiding repeating the entire review across different aspect categories.
+    Extracts the specific sentence or sub-clause that directly discusses the target aspect keywords.
+    Strictly separates genuine praise from critical customer complaints.
     """
     t = str(text).strip().replace("\n", " ")
     t = re.sub(r"\s+", " ", t)
@@ -179,45 +205,61 @@ def _extract_targeted_clause(text: str, target_keywords: List[str], max_words: i
     # First attempt: break by punctuation and conjunction clauses (, but / and / however / ; / .)
     clauses = re.split(r"(?<=[.!?;])\s+|\s+(?:but|however|although|whereas)\s+", t, flags=re.IGNORECASE)
 
-    negative_cue_words = {"broke", "broken", "crease", "bubbling", "warm", "hot", "slow", "heavy", "drain", "draining", "lag", "glitch", "disconnect", "narrow", "flimsy", "cheap"}
-
     candidates = []
     for c in clauses:
         c_low = c.lower()
-        if any(re.search(r"\b" + re.escape(kw) + r"\b", c_low) for kw in target_keywords):
+        # Clean out false ergonomics match for gaming/usage load
+        c_for_kw = re.sub(r"\bheavy\s+(?:gaming|use|usage|load|workload|duty|task|multitasking)\b", "", c_low)
+        if any(re.search(r"\b" + re.escape(kw) + r"\b", c_for_kw) for kw in target_keywords):
             clean_c = c.strip()
             clean_c = re.sub(r"^(but|and|or|however|so)\s+", "", clean_c, flags=re.IGNORECASE).strip()
             words = clean_c.split()
-            if 3 <= len(words) <= max_words:
-                has_neg = any(nw in c_low for nw in negative_cue_words)
-                candidates.append((has_neg, clean_c))
-            elif len(words) > max_words:
-                truncated = " ".join(words[:max_words]) + "..."
-                has_neg = any(nw in c_low for nw in negative_cue_words)
-                candidates.append((has_neg, truncated))
+            if len(words) > max_words:
+                clean_c = " ".join(words[:max_words]) + "..."
+            
+            has_neg = any(re.search(r"\b" + re.escape(nw) + r"\b", clean_c.lower()) for nw in NEGATIVE_CUE_WORDS)
+            has_pos = any(re.search(r"\b" + re.escape(pw) + r"\b", clean_c.lower()) for pw in POSITIVE_CUE_WORDS)
+            has_promo = any(pw in clean_c.lower() for pw in PROMO_HYPE_WORDS)
+            
+            candidates.append((has_neg, has_pos, has_promo, clean_c))
 
     if candidates:
         if is_negative_context:
-            # Sort so candidates with negative cue words come first
-            candidates.sort(key=lambda x: x[0], reverse=True)
-        return candidates[0][1]
+            # For complaints: prioritize negative clauses
+            neg_candidates = [c for c in candidates if c[0]]
+            if neg_candidates:
+                return neg_candidates[0][3]
+            return candidates[0][3]
+        else:
+            # For pros: STRICTLY FORBID clauses with negative complaints or promo spam
+            pos_candidates = [c for c in candidates if not c[0] and c[1] and not c[2]]
+            if pos_candidates:
+                return pos_candidates[0][3]
+            return ""
 
     # Fallback to standard sentence splitting
     sentences = re.split(r"(?<=[.!?])\s+", t)
     for s in sentences:
         s_low = s.lower()
-        if any(re.search(r"\b" + re.escape(kw) + r"\b", s_low) for kw in target_keywords):
-            words = s.split()
-            if 3 <= len(words) <= max_words:
-                return s.strip()
-            elif len(words) > max_words:
-                return " ".join(words[:max_words]) + "..."
+        s_for_kw = re.sub(r"\bheavy\s+(?:gaming|use|usage|load|workload|duty|task|multitasking)\b", "", s_low)
+        if any(re.search(r"\b" + re.escape(kw) + r"\b", s_for_kw) for kw in target_keywords):
+            clean_s = s.strip()
+            has_neg = any(re.search(r"\b" + re.escape(nw) + r"\b", clean_s.lower()) for nw in NEGATIVE_CUE_WORDS)
+            has_pos = any(re.search(r"\b" + re.escape(pw) + r"\b", clean_s.lower()) for pw in POSITIVE_CUE_WORDS)
+            has_promo = any(pw in clean_s.lower() for pw in PROMO_HYPE_WORDS)
+            
+            words = clean_s.split()
+            if len(words) > max_words:
+                clean_s = " ".join(words[:max_words]) + "..."
+                
+            if is_negative_context:
+                if has_neg:
+                    return clean_s
+            else:
+                if not has_neg and has_pos and not has_promo:
+                    return clean_s
 
-    # General fallback
-    words = t.split()
-    if len(words) > max_words:
-        return " ".join(words[:max_words]) + "..."
-    return t
+    return ""
 
 
 def extract_aspect_sentiment_and_failures(
@@ -276,31 +318,39 @@ def extract_aspect_sentiment_and_failures(
         is_susp = rev["is_suspicious"]
 
         for aspect_key, spec in ASPECT_DEFINITIONS.items():
-            kw_match = any(re.search(r"\b" + re.escape(kw) + r"\b", t_low) for kw in spec["keywords"])
+            # Exclude false ergonomics matches for "heavy gaming/use/load"
+            t_kw_check = t_low
+            if aspect_key == "ergonomics":
+                t_kw_check = re.sub(r"\bheavy\s+(?:gaming|use|usage|load|workload|duty|task|multitasking)\b", "", t_low)
+
+            kw_match = any(re.search(r"\b" + re.escape(kw) + r"\b", t_kw_check) for kw in spec["keywords"])
             if not kw_match:
                 continue
 
             has_fail_pattern = any(re.search(pat, t_low) for pat in spec["failure_patterns"])
             has_pos_pattern = any(re.search(pat, t_low) for pat in spec["positive_patterns"])
+            has_general_neg = any(re.search(r"\b" + re.escape(nw) + r"\b", t_low) for nw in NEGATIVE_CUE_WORDS)
 
             # Critical complaints
-            if r_val <= 3.0 or has_fail_pattern:
-                aspect_counts[aspect_key]["neg"] += 1
+            if r_val <= 3.0 or has_fail_pattern or has_general_neg:
                 q = _extract_targeted_clause(rev["text"], spec["keywords"], is_negative_context=True)
-                if q and len(aspect_counts[aspect_key]["quotes_neg"]) < 4:
-                    aspect_counts[aspect_key]["quotes_neg"].append({
-                        "rating": int(r_val),
-                        "quote": q
-                    })
-            # Genuine Praise: Only if NOT suspicious and rating >= 4
-            elif (r_val >= 4.0 or has_pos_pattern) and not is_susp:
-                aspect_counts[aspect_key]["pos"] += 1
+                if q:
+                    aspect_counts[aspect_key]["neg"] += 1
+                    if len(aspect_counts[aspect_key]["quotes_neg"]) < 4:
+                        aspect_counts[aspect_key]["quotes_neg"].append({
+                            "rating": int(r_val),
+                            "quote": q
+                        })
+            # Genuine Praise: Only if NOT suspicious, rating >= 4, and strictly NO negative cues
+            elif r_val >= 4.0 and not is_susp:
                 q = _extract_targeted_clause(rev["text"], spec["keywords"], is_negative_context=False)
-                if q and len(aspect_counts[aspect_key]["quotes_pos"]) < 4:
-                    aspect_counts[aspect_key]["quotes_pos"].append({
-                        "rating": int(r_val),
-                        "quote": q
-                    })
+                if q:
+                    aspect_counts[aspect_key]["pos"] += 1
+                    if len(aspect_counts[aspect_key]["quotes_pos"]) < 4:
+                        aspect_counts[aspect_key]["quotes_pos"].append({
+                            "rating": int(r_val),
+                            "quote": q
+                        })
 
     total_critical = max(len(critical_revs), 1)
 
@@ -338,7 +388,39 @@ def extract_aspect_sentiment_and_failures(
     failure_modes.sort(key=lambda x: (x["complaint_count"], x["incidence_pct"]), reverse=True)
 
     # -----------------------------------------------------------------------
-    # 2. Authentic Pros Extraction (Verified Organic Reviews ONLY)
+    # 2. Authentic Cons Extraction (First Pass - Real Customer Limitations)
+    # -----------------------------------------------------------------------
+    cons_list = []
+    seen_con_quotes = set()
+
+    for mode in failure_modes:
+        spec = ASPECT_DEFINITIONS.get(mode["aspect_key"], {})
+        con_title = spec.get("con_title", f"{mode['category']} Limitations")
+
+        selected_quote = None
+        selected_rating = 2
+        for eq in mode.get("evidence_quotes", []):
+            q_clean = eq["quote"].strip()
+            if q_clean and q_clean not in seen_con_quotes:
+                selected_quote = q_clean
+                selected_rating = eq["rating"]
+                seen_con_quotes.add(q_clean)
+                break
+
+        if selected_quote:
+            cons_list.append({
+                "aspect_key": mode["aspect_key"],
+                "category": mode["category"],
+                "icon": mode["icon"],
+                "aspect_title": con_title,
+                "impact_level": mode["severity"],
+                "frequency": mode["complaint_count"],
+                "evidence_quote": selected_quote,
+                "rating": selected_rating
+            })
+
+    # -----------------------------------------------------------------------
+    # 3. Authentic Pros Extraction (Verified Organic Praise ONLY - Never in Cons)
     # -----------------------------------------------------------------------
     pros_list = []
     seen_pro_quotes = set()
@@ -353,7 +435,7 @@ def extract_aspect_sentiment_and_failures(
         sentiment_ratio = round((pos_count / max(total_mentions, 1)) * 100.0)
 
         # Must have genuine positive reviews
-        if sentiment_ratio >= 45 and counts["quotes_pos"]:
+        if sentiment_ratio >= 40 and counts["quotes_pos"]:
             spec = ASPECT_DEFINITIONS[aspect_key]
             
             pro_titles = {
@@ -367,10 +449,19 @@ def extract_aspect_sentiment_and_failures(
             
             best_quote = None
             for candidate in counts["quotes_pos"]:
-                if candidate["quote"] not in seen_pro_quotes:
-                    best_quote = candidate
-                    seen_pro_quotes.add(candidate["quote"])
-                    break
+                q_text = candidate["quote"].strip()
+                if not q_text or q_text in seen_pro_quotes or q_text in seen_con_quotes:
+                    continue
+                # Cannot overlap with any con quote
+                if any(q_text in cq or cq in q_text for cq in seen_con_quotes):
+                    continue
+                # Strictly forbid negative cue words
+                if any(re.search(r"\b" + re.escape(nw) + r"\b", q_text.lower()) for nw in NEGATIVE_CUE_WORDS):
+                    continue
+
+                best_quote = candidate
+                seen_pro_quotes.add(q_text)
+                break
 
             if best_quote:
                 pros_list.append({
@@ -381,64 +472,28 @@ def extract_aspect_sentiment_and_failures(
                     "sentiment_score": sentiment_ratio,
                     "frequency": pos_count,
                     "evidence_quote": best_quote["quote"],
-                    "rating": best_quote["rating"]
+                    "rating": max(4, int(best_quote["rating"]))
                 })
 
     pros_list.sort(key=lambda x: (x["sentiment_score"], x["frequency"]), reverse=True)
 
-    # Fallback only from GENUINE organic reviews (NEVER suspicious/fake reviews)
+    # Fallback only from GENUINE organic reviews (NEVER suspicious/fake reviews, and NEVER con quotes)
     if not pros_list and genuine_high_revs:
         for r in genuine_high_revs[:2]:
-            q = _extract_targeted_clause(r["text"], ["great", "good", "love", "useful", "nice"])
-            if q not in seen_pro_quotes:
-                seen_pro_quotes.add(q)
-                pros_list.append({
-                    "aspect_key": "general",
-                    "category": "General Performance",
-                    "icon": "✨",
-                    "aspect_title": "Satisfactory Overall Performance",
-                    "sentiment_score": 85,
-                    "frequency": 1,
-                    "evidence_quote": q,
-                    "rating": int(r["rating"])
-                })
-
-    # -----------------------------------------------------------------------
-    # 3. Authentic Cons Extraction (Deduplicated Across Categories)
-    # -----------------------------------------------------------------------
-    cons_list = []
-    seen_con_quotes = set()
-
-    for mode in failure_modes:
-        spec = ASPECT_DEFINITIONS.get(mode["aspect_key"], {})
-        con_title = spec.get("con_title", f"{mode['category']} Limitations")
-
-        # Select a unique evidence quote for this con
-        selected_quote = None
-        selected_rating = 2
-        for eq in mode.get("evidence_quotes", []):
-            if eq["quote"] not in seen_con_quotes:
-                selected_quote = eq["quote"]
-                selected_rating = eq["rating"]
-                seen_con_quotes.add(eq["quote"])
-                break
-
-        # If all quotes from this review were seen, only add if complaints > 1
-        if not selected_quote and mode.get("evidence_quotes"):
-            # Avoid showing the exact same text 3 times; if no unique quote, skip duplicate card
-            continue
-
-        if selected_quote:
-            cons_list.append({
-                "aspect_key": mode["aspect_key"],
-                "category": mode["category"],
-                "icon": mode["icon"],
-                "aspect_title": con_title,
-                "impact_level": mode["severity"],
-                "frequency": mode["complaint_count"],
-                "evidence_quote": selected_quote,
-                "rating": selected_rating
-            })
+            q = _extract_targeted_clause(r["text"], ["great", "good", "love", "useful", "nice", "fast", "solid", "lasts", "clear"], is_negative_context=False)
+            if q and q not in seen_pro_quotes and q not in seen_con_quotes:
+                if not any(re.search(r"\b" + re.escape(nw) + r"\b", q.lower()) for nw in NEGATIVE_CUE_WORDS):
+                    seen_pro_quotes.add(q)
+                    pros_list.append({
+                        "aspect_key": "general",
+                        "category": "General Performance",
+                        "icon": "✨",
+                        "aspect_title": "Satisfactory Overall Performance",
+                        "sentiment_score": 85,
+                        "frequency": 1,
+                        "evidence_quote": q,
+                        "rating": int(r["rating"])
+                    })
 
     # -----------------------------------------------------------------------
     # 4. Honest Aspect Scorecard (Fix 70/100 bug when 0 mentions)

@@ -233,13 +233,45 @@ def generate_device_reviews(title, asin, target_rating=4.5):
     selected_org = organic_texts[:n_org]
     
     org_sum_needed = target_sum - (n_promo * 5.0)
-    avg_org = org_sum_needed / n_org
     
-    org_ratings = [round(avg_org, 1) for _ in range(n_org)]
-    diff = round(target_sum - (n_promo * 5.0 + sum(org_ratings)), 1)
-    if org_ratings:
-        org_ratings[0] = round(org_ratings[0] + diff, 1)
-        
+    # Initialize organic ratings with their realistic natural base ratings
+    org_ratings = [float(base_r) for base_r, _ in selected_org]
+    curr_org_sum = sum(org_ratings)
+    diff = round(org_sum_needed - curr_org_sum, 1)
+
+    # Adjust ratings gently while strictly preserving polarity:
+    # Reviews with base_r >= 4.0 remain praise (4.0 - 5.0)
+    # Reviews with base_r <= 3.0 remain complaints (1.0 - 3.5)
+    for _ in range(30):
+        if abs(diff) < 0.1:
+            break
+        if diff > 0:
+            # Raise praise reviews first up to 5.0
+            raised = False
+            for idx in range(len(org_ratings)):
+                base_r = selected_org[idx][0]
+                cap = 5.0 if base_r >= 4.0 else 3.5
+                if org_ratings[idx] + 0.5 <= cap:
+                    org_ratings[idx] = round(org_ratings[idx] + 0.5, 1)
+                    diff = round(diff - 0.5, 1)
+                    raised = True
+                    break
+            if not raised:
+                break
+        else:
+            # Lower complaint reviews down towards 1.0 - 2.0
+            lowered = False
+            for idx in reversed(range(len(org_ratings))):
+                base_r = selected_org[idx][0]
+                floor = 4.0 if base_r >= 4.0 else 1.0
+                if org_ratings[idx] - 0.5 >= floor:
+                    org_ratings[idx] = round(org_ratings[idx] - 0.5, 1)
+                    diff = round(diff + 0.5, 1)
+                    lowered = True
+                    break
+            if not lowered:
+                break
+
     reviews = []
     for i in range(n_promo):
         reviews.append({"rating": 5.0, "review_text": promo_texts[i % len(promo_texts)]})

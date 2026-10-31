@@ -7,7 +7,7 @@ Features:
 2. 🔍 Deep-Dive Forensic Report (Hero metrics: Advertised vs Actual Rating, Star Distribution Shift)
 3. 🛠️ Product Failure Root Cause & Real-World Pros/Cons Engine (Extracts why products fail & authentic pros/cons)
 4. 🏬 Electronics Storefront & Catalog (300+ indexed devices across 7 categories)
-5. 📊 AI Model Studio, Viva Defense & Mathematical Optimization (Benchmark metrics, confusion matrix, viva defense, and Gradient Descent training engine)
+5. 📊 AI Model Studio & Mathematical Optimization (Benchmark metrics, confusion matrix, linguistic tokens, and Gradient Descent training engine)
 """
 
 from pathlib import Path
@@ -520,10 +520,9 @@ def render_calculus_lab():
 
     st.write("")
 
-    tab_play, tab_math, tab_viva_cards, tab_report = st.tabs([
+    tab_play, tab_math, tab_report = st.tabs([
         "⚙️ Live Optimizer Playground",
         "📐 Mathematical Formulations & Proofs",
-        "🎓 Blackboard Viva Defense (4 Marks)",
         "📄 CIE-3 Project Report & Softcopy"
     ])
 
@@ -710,48 +709,6 @@ where:
 At each iteration $t$, the cost $J(\mathbf{w}, b)$ strictly decreases until reaching the optimal parameters $\mathbf{w}^*, b^*$.
 """)
 
-    with tab_viva_cards:
-        st.markdown("### 🎓 Blackboard Viva Defense Preparation (4 Marks)")
-        st.caption("Examiner viva walkthrough: The evaluator may ask you to derive equations or explain calculus concepts on the blackboard.")
-
-        with st.expander("Q1. 'Work out the derivative of the Sigmoid function on the board.'", expanded=True):
-            st.markdown("""
-**Board Walkthrough (3 Quick Steps):**
-1. **Write:** $f(z) = \\frac{1}{1 + e^{-z}} = (1 + e^{-z})^{-1}$
-2. **Apply Power & Chain Rule:** $f'(z) = -1(1 + e^{-z})^{-2} \\cdot (-e^{-z}) = \\frac{e^{-z}}{(1 + e^{-z})^2}$
-3. **Split numerator:** $\\frac{1}{1 + e^{-z}} \\cdot \\frac{e^{-z}}{1 + e^{-z}} = f(z) \\cdot \\left(\\frac{1 + e^{-z} - 1}{1 + e^{-z}}\\right) = f(z)(1 - f(z))$
-4. **State conclusion:** "The derivative is expressed purely as a function of its own output, which is computationally optimal."
-""")
-
-        with st.expander("Q2. 'Show how the $(h - y)$ error term appears using the Chain Rule.'", expanded=True):
-            st.markdown("""
-**Board Walkthrough:**
-1. State the 3 Chain Rule components: $\\frac{\\partial J}{\\partial w_j} = \\frac{\\partial J}{\\partial h} \\cdot \\frac{\\partial h}{\\partial z} \\cdot \\frac{\\partial z}{\\partial w_j}$
-2. Differentiate $J$: $\\frac{\\partial J}{\\partial h} = -\\frac{y}{h} + \\frac{1 - y}{1 - h} = \\frac{h - y}{h(1 - h)}$
-3. Differentiate activation: $\\frac{\\partial h}{\\partial z} = h(1 - h)$
-4. Multiply: $\\left(\\frac{h - y}{h(1-h)}\\right) \\cdot h(1 - h) \\cdot x_j = (h - y)x_j$
-5. State conclusion: "The term $h(1-h)$ in the denominator cancels the Sigmoid derivative exactly, leaving the intuitive linear error $(h - y)x_j$."
-""")
-
-        with st.expander("Q3. 'How does the learning rate (alpha) affect Gradient Descent convergence?'", expanded=True):
-            st.markdown(r"""
-**Board Walkthrough:**
-1. **Too Small ($\alpha \le 0.01$):** Updates are minuscule $\Delta w = -\alpha \nabla J$. The algorithm requires thousands of epochs, converging extremely slowly.
-2. **Optimal ($\alpha \approx 0.15$):** Steady, rapid exponential descent in cost towards the minimum with smooth parameter settling.
-3. **Too Large ($\alpha \ge 0.8$):** The step overshoots the minimum point on the cost bowl. The loss oscillates wildly and diverges ($J \to \infty$).
-""")
-
-        with st.expander("Q4. 'Compare Batch GD vs. Stochastic GD vs. Mini-Batch GD.'", expanded=True):
-            st.markdown("""
-| Feature | Batch GD (BGD) | Stochastic GD (SGD) | Mini-Batch GD (MBGD) |
-|---|---|---|---|
-| **Gradient Sample** | Full dataset ($m$ samples) | Single sample ($m = 1$) | Mini-batch ($B = 32$ to $64$) |
-| **Convergence Path** | Deterministic, smooth straight path | High variance, noisy zig-zag | Balanced, moderate variance |
-| **Vectorization** | High (SIMD / BLAS) | Poor (sequential loop overhead) | Optimal (GPU / BLAS parallel) |
-| **Memory Requirement**| Large (stores all $m$ rows in RAM) | Minimal ($O(1)$ RAM) | Compact ($O(B)$ RAM) |
-| **Saddle Point Escape**| Can stall at flat saddles | Random noise helps escape saddles | Noise helps escape saddles |
-""")
-
     with tab_report:
         st.markdown("### 📄 Mathematical Foundations & Technical Report")
         st.caption("Complete technical report documenting the mathematical formulations, chain rule derivations, and gradient descent optimization.")
@@ -774,7 +731,7 @@ At each iteration $t$, the cost $J(\mathbf{w}, b)$ strictly decreases until reac
 2. **Mathematical Formulation:** Sigmoid activation, Binary Cross-Entropy loss, and analytical partial derivatives via the Chain Rule.
 3. **NumPy Optimization Engine:** Vectorized implementations of Batch GD, Mini-Batch GD, and Stochastic GD.
 4. **Empirical Results & Convergence Analysis:** Loss trajectory from initial loss $0.69315 \\to 0.02843$ (95.9% reduction) across learning rates $\\alpha$.
-5. **Technical Viva Walkthrough:** Whiteboard step-by-step calculus derivations.
+5. **Analytical Convergence Validation:** Mathematical verification across varying step sizes.
 """)
 
             with st.expander("📖 Preview Complete Technical Report (Click to Expand)"):
@@ -801,7 +758,7 @@ nav_choice = st.sidebar.radio(
         "🌐 Live E-Commerce URL Auditor",
         "🔍 Deep-Dive Forensic Report",
         "🏬 Electronics Storefront & Catalog",
-        "📊 AI Model Studio & Viva Lab"
+        "📊 AI Model Studio & Optimization"
     ]
 )
 
@@ -841,15 +798,20 @@ if nav_choice == "🌐 Live E-Commerce URL Auditor":
 
     url_input = st.text_input(
         "Enter Amazon Product URL or ASIN:",
-        value=selected_url if selected_url else "https://www.amazon.in/Samsung-Smartphone-Silverblue-Snapdragon-ProVisual/dp/B0DSKNKCYX",
-        placeholder="e.g. https://www.amazon.in/... or paste any Amazon product link"
+        value=selected_url if selected_url else "",
+        placeholder="Paste any Amazon product link or ASIN (e.g. https://www.amazon.in/dp/...)"
     )
 
     run_audit = st.button("🚀 Audit Product URL & Diagnose", type="primary")
 
+    target_to_audit = url_input.strip() if url_input.strip() else selected_url
+
     if run_audit or selected_url:
-        with st.spinner("Retrieving customer reviews and running forensic NLP models..."):
-            extracted = fetch_product_reviews_from_url(url_input, catalog_list=catalog)
+        if not target_to_audit:
+            st.warning("⚠️ Please enter or paste an Amazon product URL or ASIN above to start the audit.")
+        else:
+            with st.spinner("Retrieving customer reviews and running forensic NLP models..."):
+                extracted = fetch_product_reviews_from_url(target_to_audit, catalog_list=catalog)
 
         if extracted.get("status") == "captcha_blocked":
             st.warning("🔒 **Amazon Bot Protection Active:** Amazon returned an anti-bot CAPTCHA for this request.")
@@ -1193,13 +1155,13 @@ elif nav_choice == "🏬 Electronics Storefront & Catalog":
 
 
 # -------------------------------------------------------------
-# Mode 4: 📊 AI Model Studio & Viva Lab
+# Mode 4: 📊 AI Model Studio & Optimization
 # -------------------------------------------------------------
-elif nav_choice == "📊 AI Model Studio & Viva Lab":
-    st.subheader("📊 AI Model Studio, Benchmark Evaluation & Viva Defense")
-    st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, predictive linguistic tokens, and viva examiner questions.")
+elif nav_choice == "📊 AI Model Studio & Optimization":
+    st.subheader("📊 AI Model Studio & Benchmark Evaluation")
+    st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, predictive linguistic tokens, and mathematical optimization.")
 
-    tab_eval, tab_words, tab_viva, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "🎓 Project Viva & Defense Guide", "📉 Mathematical Optimization (Gradient Descent)"])
+    tab_eval, tab_words, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "📉 Mathematical Optimization (Gradient Descent)"])
 
     with tab_eval:
         st.markdown(f"**Selected Best Model:** `{metrics.get('best_model', 'Logistic Regression (Balanced TF-IDF)')}`")
@@ -1257,35 +1219,6 @@ elif nav_choice == "📊 AI Model Studio & Viva Lab":
                 st.dataframe(df_gen, use_container_width=True, hide_index=True)
             else:
                 st.info("No words recorded.")
-
-    with tab_viva:
-        st.subheader("🎓 Project Viva Defense & Technical Q&A")
-
-        vivas = [
-            ("Q: How does TrustRate AI extract 'Why a Product Fails' and 'Pros & Cons' from actual customer reviews?",
-             "TrustRate AI uses an Aspect-Based Sentiment and Diagnostic Engine (`aspect_analyzer.py`). It partitions reviews into verified organic positive reviews (4-5★) and authentic critical reviews (1-3★). It scans across 6 hardware engineering dimensions: Battery & Power, Build Durability, Wireless Connectivity, Audio/Mic Quality, Ergonomics & Fit, and Software/Controls. By mapping failure pattern regexes and calculating incidence rates, it identifies the primary root causes of product breakdown and extracts exact supporting quote snippets from real customer experiences."),
-
-            ("Q: How does the Rating Deflator calculate rating inflation from an Amazon URL?",
-             "The system extracts the customer reviews and advertised star rating ($R_{displayed}$) from the product link. The trained NLP model classifies each review. Filtering out the detected fake reviews gives the genuine rating ($R_{authentic}$):\n\n"
-             "$$\\Delta R = R_{displayed} - R_{authentic}$$\n\n"
-             "If a product has an advertised rating of 4.50★ but genuine reviews average 3.80★, the rating is inflated by **+0.70 stars** (+18.4%)."),
-
-            ("Q: Why is text classification needed in addition to star ratings?",
-             "Star ratings alone do not indicate whether reviews were generated organically or sponsored by incentivized review campaigns. Deceptive reviews typically exhibit distinct linguistic patterns: excessive generic superlatives ('best ever', 'perfect in every way'), lack of specific usage duration, and abnormal exclamation density."),
-
-            ("Q: How did you increase the model accuracy and what models were benchmarked?",
-             "We upgraded the feature representation using a Sublinear TF-IDF FeatureUnion combining word n-grams (1-2) with character n-grams (3-5) to capture subtle stylistic cues and punctuation patterns. We benchmarked Balanced Logistic Regression, Calibrated LinearSVC, Multinomial Naive Bayes, Complement Naive Bayes, and Calibrated SGDClassifier. The enhanced pipeline boosted accuracy from ~72% to **75.8% - 76.5%** and ROC-AUC to **0.828**."),
-
-            ("Q: How do you prevent data leakage during model training?",
-             "If the same reviewer wrote multiple reviews, having some in train and some in test causes data leakage (the model might memorize reviewer idiolects rather than general deception signals). We strictly retained only one review per reviewer before sampling."),
-
-            ("Q: What are the main limitations?",
-             "Research labels (campaign tracking and moderation removals) are strong proxies but not 100% verified ground truth for every individual sentence. Hence, TrustRate AI serves as an explainable decision support tool rather than an absolute fraud accuser.")
-        ]
-
-        for q, a in vivas:
-            with st.expander(q):
-                st.markdown(a)
 
     with tab_calc:
         render_calculus_lab()
