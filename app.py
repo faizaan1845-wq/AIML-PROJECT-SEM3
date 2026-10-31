@@ -464,283 +464,6 @@ def render_aspect_diagnostics_ui(aspect_data: dict):
 
 
 # ---------------------------------------------------------------------------
-# Reusable UI Component: Calculus CIE-3 Gradient Descent & Ascent Lab
-# ---------------------------------------------------------------------------
-def render_calculus_lab():
-    st.subheader("📉 Mathematical Optimization Engine: Loss Minimization via Gradient Descent")
-    st.caption(
-        "Demonstrates how the core review authenticity model is trained. "
-        "Formulates Binary Cross-Entropy (BCE) loss, derives analytical partial derivatives via the Chain Rule, "
-        "and shows how iterative Gradient Descent updates minimize classification error."
-    )
-
-    st.markdown(
-        "<div style='margin-bottom: 16px;'>"
-        "<span class='url-badge'>Algorithm: Vectorized Gradient Descent</span> "
-        "<span class='url-badge'>Loss Function: Binary Cross-Entropy</span> "
-        "<span class='url-badge' style='color: #6ee7b7;'>Optimal Learning Rate: α = 0.15</span>"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    # 4 Hero Metric Cards
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown("""
-        <div class="stat-card">
-            <div class="stat-card-title">Initial Loss J(θ = 0)</div>
-            <div class="stat-card-value" style="color: #60a5fa;">0.6931</div>
-            <div class="stat-card-delta">J(0) = ln(2) at maximum entropy</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with c2:
-        st.markdown("""
-        <div class="stat-card">
-            <div class="stat-card-title">Converged Loss J(θ*)</div>
-            <div class="stat-card-value" style="color: #34d399;">0.0284</div>
-            <div class="stat-card-delta" style="color: #34d399;">95.9% empirical loss reduction</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with c3:
-        st.markdown("""
-        <div class="stat-card">
-            <div class="stat-card-title">Step Size / Alpha (α)</div>
-            <div class="stat-card-value" style="color: #a78bfa;">α = 0.15</div>
-            <div class="stat-card-delta" style="color: #a78bfa;">Optimal exponential descent rate</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with c4:
-        st.markdown("""
-        <div class="stat-card">
-            <div class="stat-card-title">Classification Accuracy</div>
-            <div class="stat-card-value" style="color: #f59e0b;">96.8%</div>
-            <div class="stat-card-delta">Converged model performance</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("")
-
-    tab_play, tab_math, tab_report = st.tabs([
-        "⚙️ Live Optimizer Playground",
-        "📐 Mathematical Formulations & Proofs",
-        "📄 CIE-3 Project Report & Softcopy"
-    ])
-
-    with tab_play:
-        st.markdown("#### 🔬 Real-Time Optimization Simulation")
-        st.caption("Adjust hyperparameters below to observe loss trajectories, learning rate stability, and learned feature weights in real time.")
-
-        p_col1, p_col2, p_col3, p_col4 = st.columns(4)
-        with p_col1:
-            algo_choice = st.selectbox(
-                "Optimization Algorithm:",
-                [
-                    "Batch Gradient Descent (BGD)",
-                    "Mini-Batch Gradient Descent (MBGD)",
-                    "Stochastic Gradient Descent (SGD)",
-                    "Gradient Ascent (Log-Likelihood Maximization)"
-                ]
-            )
-        with p_col2:
-            lr_val = st.slider("Learning Rate (α):", min_value=0.01, max_value=0.80, value=0.15, step=0.01)
-        with p_col3:
-            epochs_val = st.slider("Epochs / Iterations:", min_value=10, max_value=120, value=50, step=5)
-        with p_col4:
-            reg_val = st.slider("L2 Penalty (λ):", min_value=0.00, max_value=0.10, value=0.01, step=0.005)
-
-        # Generate realistic dataset
-        np.random.seed(42)
-        n_samples = 400
-        n_feat = 6
-        X_gen = np.random.normal(loc=[0.02, 0.05, 0.1, 0.45, 0.2, 0.7], scale=[0.01, 0.02, 0.2, 0.1, 0.1, 0.15], size=(n_samples // 2, n_feat))
-        X_susp = np.random.normal(loc=[0.18, 0.28, 2.8, 0.25, 1.2, 0.95], scale=[0.04, 0.06, 0.6, 0.08, 0.2, 0.05], size=(n_samples // 2, n_feat))
-        X_sim = np.vstack([X_gen, X_susp])
-        y_sim = np.hstack([np.zeros(n_samples // 2), np.ones(n_samples // 2)])
-        perm = np.random.permutation(n_samples)
-        X_sim, y_sim = X_sim[perm], y_sim[perm]
-        X_sim = (X_sim - X_sim.mean(axis=0)) / (X_sim.std(axis=0) + 1e-8)
-
-        # Run selected optimizer
-        opt = GradientDescentOptimizer(learning_rate=lr_val, epochs=epochs_val, lambda_reg=reg_val, batch_size=32)
-        if "Batch Gradient Descent" in algo_choice:
-            hist = opt.fit_batch_gradient_descent(X_sim, y_sim)
-            y_title = "Cost J(θ)"
-            metric_label = "Final BCE Cost"
-            final_val = hist[-1]
-        elif "Mini-Batch" in algo_choice:
-            hist = opt.fit_mini_batch_gradient_descent(X_sim, y_sim)
-            y_title = "Cost J(θ)"
-            metric_label = "Final BCE Cost"
-            final_val = hist[-1]
-        elif "Stochastic" in algo_choice:
-            hist = opt.fit_stochastic_gradient_descent(X_sim, y_sim)
-            y_title = "Cost J(θ)"
-            metric_label = "Final BCE Cost"
-            final_val = hist[-1]
-        else:
-            hist = opt.fit_gradient_ascent(X_sim, y_sim)
-            y_title = "Log-Likelihood ℓ(θ)"
-            metric_label = "Final Log-Likelihood"
-            final_val = hist[-1]
-
-        # Trajectory Visualization
-        ch_c1, ch_c2 = st.columns([3, 2])
-        with ch_c1:
-            st.markdown(f"**Optimization Trajectory ({algo_choice}):**")
-            chart_df = pd.DataFrame({
-                "Epoch": list(range(1, len(hist) + 1)),
-                "ObjectiveValue": hist
-            })
-            chart_line = alt.Chart(chart_df).mark_line(color="#38bdf8", strokeWidth=2.5, point=True).encode(
-                x=alt.X("Epoch:Q", title="Epoch / Iteration"),
-                y=alt.Y("ObjectiveValue:Q", title=y_title, scale=alt.Scale(zero=False)),
-                tooltip=["Epoch", "ObjectiveValue"]
-            ).properties(height=280)
-            st.altair_chart(chart_line, use_container_width=True)
-
-        with ch_c2:
-            st.markdown("**Optimizer Diagnostics:**")
-            st.metric("Initial Objective Value", f"{hist[0]:.4f}")
-            st.metric(metric_label, f"{final_val:.4f}")
-            if "Ascent" in algo_choice:
-                delta_str = f"+{final_val - hist[0]:.2f} units (Maximizing)"
-                st.metric("Log-Likelihood Gain", delta_str)
-            else:
-                pct_red = ((hist[0] - final_val) / hist[0]) * 100.0
-                st.metric("Total Loss Reduction", f"{pct_red:.1f}%")
-            st.metric("Trained Bias (Intercept b)", f"{opt.b:.4f}")
-
-        # Learning Rate Sensitivity Benchmark
-        st.markdown("#### 📊 Learning Rate (α) Sensitivity Comparison")
-        st.caption("Illustrates the fundamental calculus behavior of Gradient Descent under varying step sizes α:")
-
-        lrs = [0.01, 0.05, 0.20, 0.70]
-        lr_records = []
-        for lr_item in lrs:
-            tmp_opt = GradientDescentOptimizer(learning_rate=lr_item, epochs=min(epochs_val, 60), lambda_reg=reg_val)
-            h = tmp_opt.fit_batch_gradient_descent(X_sim, y_sim)
-            for ep_idx, v in enumerate(h):
-                lr_records.append({"Epoch": ep_idx + 1, "Cost": v, "Learning Rate": f"α = {lr_item}"})
-
-        lr_comp_df = pd.DataFrame(lr_records)
-        lr_comp_chart = alt.Chart(lr_comp_df).mark_line(strokeWidth=2).encode(
-            x=alt.X("Epoch:Q", title="Epoch"),
-            y=alt.Y("Cost:Q", title="Cost J(θ)", scale=alt.Scale(zero=False)),
-            color=alt.Color("Learning Rate:N", scale=alt.Scale(range=["#f59e0b", "#3b82f6", "#10b981", "#ef4444"])),
-            tooltip=["Epoch", "Learning Rate", "Cost"]
-        ).properties(height=260)
-        st.altair_chart(lr_comp_chart, use_container_width=True)
-
-        # Learned Weights Interpretation Table
-        st.markdown("#### ⚖️ Learned Weight Vector (θ) & Physical Interpretations")
-        weight_rows = []
-        interpretations = [
-            ("Exclamation Density (x₁)", opt.w[0], "Positive (+): High exclamation marks correlate strongly with promotional fabrication."),
-            ("Uppercase Caps Ratio (x₂)", opt.w[1], "Positive (+): Aggressive capitalization indicates promotional spam."),
-            ("Superlative Frequency (x₃)", opt.w[2], "Positive (+): Extreme praise buzzwords ('perfect', 'flawless') signify deceptive inflation."),
-            ("Review Word Count (x₄)", opt.w[3], "Negative (-): Genuine buyers write longer, detailed functional descriptions."),
-            ("Rating Deviation (x₅)", opt.w[4], "Positive (+): Severe divergence from the store baseline signals review brigading."),
-            ("Sentiment Polarity (x₆)", opt.w[5], "Positive (+): Artificially euphoric positive tone flags incentivized campaigns.")
-        ]
-        for name, weight, interp in interpretations:
-            weight_rows.append({"Feature": name, "Calculated Weight (w_j)": f"{weight:+.4f}", "Calculus Interpretation": interp})
-        st.dataframe(pd.DataFrame(weight_rows), use_container_width=True, hide_index=True)
-
-    with tab_math:
-        st.markdown("### 📐 Complete Mathematical Formulations & Derivations")
-        st.caption("Full rigorous calculus derivations required for the CIE-3 Project Report (Part 1).")
-
-        with st.expander("1. Sigmoid Hypothesis Function & Derivative Derivation", expanded=True):
-            st.markdown(r"""
-**Activation Function:**
-$$\sigma(z) = \frac{1}{1 + e^{-z}} = (1 + e^{-z})^{-1}$$
-
-**Derivative Derivation using Power and Chain Rules:**
-$$\frac{d}{dz}\sigma(z) = -1 \cdot (1 + e^{-z})^{-2} \cdot \frac{d}{dz}(1 + e^{-z})$$
-$$= -(1 + e^{-z})^{-2} \cdot (-e^{-z}) = \frac{e^{-z}}{(1 + e^{-z})^2}$$
-$$= \frac{1}{1 + e^{-z}} \cdot \frac{e^{-z}}{1 + e^{-z}} = \frac{1}{1 + e^{-z}} \left( 1 - \frac{1}{1 + e^{-z}} \right)$$
-
-$$\therefore \frac{d}{dz}\sigma(z) = \sigma(z)(1 - \sigma(z))$$
-
-*Significance:* The derivative evaluates directly from the forward activation without recomputing exponentials, drastically accelerating gradient descent updates.
-""")
-
-        with st.expander("2. Binary Cross-Entropy Cost Function & Chain Rule Gradient Derivation", expanded=True):
-            st.markdown(r"""
-**Cost Function with $L_2$ Regularization:**
-$$J(\mathbf{w}, b) = -\frac{1}{m} \sum_{i=1}^m \left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right] + \frac{\lambda}{2m} \|\mathbf{w}\|^2$$
-
-where $z^{(i)} = \mathbf{w}^T \mathbf{x}^{(i)} + b$ and $h^{(i)} = \sigma(z^{(i)})$.
-
-**Multivariate Chain Rule Application:**
-For each sample $i$, let $L^{(i)} = -\left[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \right]$.
-$$\frac{\partial L^{(i)}}{\partial w_j} = \frac{\partial L^{(i)}}{\partial h^{(i)}} \cdot \frac{\partial h^{(i)}}{\partial z^{(i)}} \cdot \frac{\partial z^{(i)}}{\partial w_j}$$
-
-1. First factor:
-$$\frac{\partial L^{(i)}}{\partial h^{(i)}} = -\left[ \frac{y^{(i)}}{h^{(i)}} - \frac{1 - y^{(i)}}{1 - h^{(i)}} \right] = \frac{h^{(i)} - y^{(i)}}{h^{(i)}(1 - h^{(i)})}$$
-
-2. Second factor (Sigmoid derivative):
-$$\frac{\partial h^{(i)}}{\partial z^{(i)}} = h^{(i)}(1 - h^{(i)})$$
-
-3. Third factor:
-$$\frac{\partial z^{(i)}}{\partial w_j} = x_j^{(i)}$$
-
-Multiplying together, the intermediate denominator cancels out completely:
-$$\frac{\partial L^{(i)}}{\partial w_j} = \left[ \frac{h^{(i)} - y^{(i)}}{h^{(i)}(1 - h^{(i)})} \right] \cdot \left[ h^{(i)}(1 - h^{(i)}) \right] \cdot x_j^{(i)} = (h^{(i)} - y^{(i)}) x_j^{(i)}$$
-
-Adding the regularizer gradient $\frac{\partial}{\partial w_j}\left( \frac{\lambda}{2m} \sum_k w_k^2 \right) = \frac{\lambda}{m} w_j$:
-$$\therefore \frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)}) x_j^{(i)} + \frac{\lambda}{m} w_j$$
-$$\therefore \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)})$$
-""")
-
-        with st.expander("3. Gradient Descent Parameter Update Rule", expanded=True):
-            st.markdown(r"""
-**Parameter Update Formulation:**
-To minimize the Binary Cross-Entropy loss $J(\mathbf{w}, b)$, weights and bias are updated iteratively in the direction opposite to the gradient vector:
-
-$$w_j^{(t+1)} := w_j^{(t)} - \alpha \frac{\partial J}{\partial w_j}$$
-$$b^{(t+1)} := b^{(t)} - \alpha \frac{\partial J}{\partial b}$$
-
-where:
-- $\alpha > 0$ is the **learning rate** (step size).
-- $\frac{\partial J}{\partial w_j} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)}) x_j^{(i)}$ is the average error-weighted feature gradient.
-- $\frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (h^{(i)} - y^{(i)})$ is the bias shift.
-
-At each iteration $t$, the cost $J(\mathbf{w}, b)$ strictly decreases until reaching the optimal parameters $\mathbf{w}^*, b^*$.
-""")
-
-    with tab_report:
-        st.markdown("### 📄 Mathematical Foundations & Technical Report")
-        st.caption("Complete technical report documenting the mathematical formulations, chain rule derivations, and gradient descent optimization.")
-
-        if CIE3_REPORT_PATH.exists():
-            with open(CIE3_REPORT_PATH, "r", encoding="utf-8") as f:
-                report_content = f.read()
-
-            st.download_button(
-                label="📥 Download Mathematical Optimization Report (.md)",
-                data=report_content,
-                file_name="CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md",
-                mime="text/markdown",
-                type="primary"
-            )
-
-            st.markdown("#### Technical Report Overview:")
-            st.markdown("""
-1. **Real-World Problem Formulation:** Review fraud detection, rating distortion, and loss function modeling.
-2. **Mathematical Formulation:** Sigmoid activation, Binary Cross-Entropy loss, and analytical partial derivatives via the Chain Rule.
-3. **NumPy Optimization Engine:** Vectorized implementations of Batch GD, Mini-Batch GD, and Stochastic GD.
-4. **Empirical Results & Convergence Analysis:** Loss trajectory from initial loss $0.69315 \\to 0.02843$ (95.9% reduction) across learning rates $\\alpha$.
-5. **Analytical Convergence Validation:** Mathematical verification across varying step sizes.
-""")
-
-            with st.expander("📖 Preview Complete Technical Report (Click to Expand)"):
-                st.markdown(report_content)
-        else:
-            st.error("Report file not found. Ensure `CALCULUS_CIE3_GRADIENT_DESCENT_REPORT.md` is in the project root.")
-
-
-# ---------------------------------------------------------------------------
 # App Header & Navigation
 # ---------------------------------------------------------------------------
 h_col1, h_col2 = st.columns([1, 7])
@@ -758,7 +481,7 @@ nav_choice = st.sidebar.radio(
         "🌐 Live E-Commerce URL Auditor",
         "🔍 Deep-Dive Forensic Report",
         "🏬 Electronics Storefront & Catalog",
-        "📊 AI Model Studio & Optimization"
+        "📊 AI Model Studio & Evaluation"
     ]
 )
 
@@ -1155,13 +878,13 @@ elif nav_choice == "🏬 Electronics Storefront & Catalog":
 
 
 # -------------------------------------------------------------
-# Mode 4: 📊 AI Model Studio & Optimization
+# Mode 4: 📊 AI Model Studio & Evaluation
 # -------------------------------------------------------------
-elif nav_choice == "📊 AI Model Studio & Optimization":
+elif nav_choice == "📊 AI Model Studio & Evaluation":
     st.subheader("📊 AI Model Studio & Benchmark Evaluation")
-    st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, predictive linguistic tokens, and mathematical optimization.")
+    st.caption("Transparent evaluation of machine learning models trained on balanced electronics reviews. Inspect performance metrics, confusion matrix, and predictive linguistic tokens.")
 
-    tab_eval, tab_words, tab_calc = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens", "📉 Mathematical Optimization (Gradient Descent)"])
+    tab_eval, tab_words = st.tabs(["📈 Model Benchmarks & Metrics", "🔤 Predictive Linguistic Tokens"])
 
     with tab_eval:
         st.markdown(f"**Selected Best Model:** `{metrics.get('best_model', 'Logistic Regression (Balanced TF-IDF)')}`")
@@ -1219,9 +942,6 @@ elif nav_choice == "📊 AI Model Studio & Optimization":
                 st.dataframe(df_gen, use_container_width=True, hide_index=True)
             else:
                 st.info("No words recorded.")
-
-    with tab_calc:
-        render_calculus_lab()
 
 st.divider()
 st.caption("🛡️ TrustRate AI — Machine Learning for E-Commerce Transparency and Consumer Protection.")
